@@ -101,6 +101,8 @@ public class LandUserService {
 		ownerInfo.setFatherOrHusbandName(ownerInfoV2.getFatherOrHusbandName());
 		ownerInfo.setGender(ownerInfoV2.getGender());
 		ownerInfo.setId(ownerInfoV2.getId());
+		ownerInfo.setAadhaarNumber(ownerInfoV2.getAadhaarNumber());
+		ownerInfo.setPan(ownerInfoV2.getPanNumber());
 		ownerInfo.setMobileNumber(ownerInfoV2.getMobileNumber());
 		ownerInfo.setName(ownerInfoV2.getName());
 		if(ownerInfoV2.getPermanentAddress() != null){
@@ -161,7 +163,7 @@ public class LandUserService {
 	 *            The owner to whom the username is to assigned
 	 */
 	private void setUserName(OwnerInfoV2 owner) {
-		owner.setUserName(owner.getUserName());
+		owner.setUserName(owner.getMobileNumber());
 	}
 
 	/**
