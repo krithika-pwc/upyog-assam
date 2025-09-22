@@ -17,6 +17,7 @@ import org.egov.common.entity.edcr.Room;
 import org.egov.common.entity.edcr.RoomHeight;
 import org.egov.common.entity.edcr.Toilet;
 import org.egov.common.entity.edcr.Window;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
@@ -62,25 +63,39 @@ public class ToiletDetailsExtract extends FeatureExtract {
                             toiletObj.setToilets(toiletMeasurementList);
                             toilets.add(toiletObj);
                         }
+                        
+                       
                     }
+                   
+                    String toiletVentilationLayer = String.format(
+                            layerNames.getLayerName("LAYER_NAME_BLK_FLR_TOILET_VENTILATION"),
+                            block.getNumber(), f.getNumber(), "+\\d");
 
-                    String toiletVentilationLayer = String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_TOILET_VENTILATION"), block.getNumber(),
-                            f.getNumber(), "+\\d");
                     List<String> ventilationList = Util.getLayerNamesLike(planDetail.getDoc(), toiletVentilationLayer);
 
+                    int index = 0;
                     for (String ventilationHeightLayer : ventilationList) {
-                        List<DXFLWPolyline> toiletVentilationMeasurements = Util.getPolyLinesByLayer(planDetail.getDoc(), ventilationHeightLayer);
-                        String windowHeight = Util.getMtextByLayerName(planDetail.getDoc(), ventilationHeightLayer);
-
-                        BigDecimal windowHeight1 = windowHeight != null
-                                ? BigDecimal.valueOf(Double.parseDouble(windowHeight.replaceAll("WINDOW_HT_M=", "")))
+                        // get height from layer
+                        String windowHeightStr = Util.getMtextByLayerName(planDetail.getDoc(), ventilationHeightLayer);
+                        BigDecimal windowHeight = windowHeightStr != null
+                                ? new BigDecimal(windowHeightStr.replaceAll("WINDOW_HT_M=", ""))
                                 : BigDecimal.ZERO;
 
-                        for (Toilet toiletObj : toilets) {
-                            toiletObj.setToiletVentilation(windowHeight1);
+                        // get widths from that same layer
+                        List<BigDecimal> windowWidths =
+                                Util.getListOfDimensionByColourCode(planDetail, ventilationHeightLayer, DxfFileConstants.INDEX_COLOR_TWO);
+   
+                        if (index < toilets.size()) {
+                            Toilet toiletObj = toilets.get(index);
+                            toiletObj.setToiletVentilation(windowHeight);
+                            if (!windowWidths.isEmpty()) {
+                                toiletObj.setToiletWindowWidth(windowWidths);
+                            }
                         }
+
+                        index++;
                     }
-                    
+
                     f.setToilet(toilets);
                 }
             }
