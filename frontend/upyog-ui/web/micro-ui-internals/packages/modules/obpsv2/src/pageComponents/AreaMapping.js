@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { FormStep, CardLabel, Dropdown, TextInput } from "@upyog/digit-ui-react-components";
 
-const AreaMapping = ({ t, config, onSelect, formData }) => {
+const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
+
   // State for all dropdown values
-  const [district, setDistrict] = useState(formData?.areaMapping?.district || "");
-  const [planningArea, setPlanningArea] = useState(formData?.areaMapping?.planningArea || "");
-  const [ppAuthority, setPpAuthority] = useState(formData?.areaMapping?.ppAuthority || "");
-  const [bpAuthority, setBpAuthority] = useState(formData?.areaMapping?.bpAuthority || "");
-  const [revenueVillage, setRevenueVillage] = useState(formData?.areaMapping?.revenueVillage || "");
-  const [mouza, setMouza] = useState(formData?.areaMapping?.mouza || "");
-  const [ward, setWard] = useState(formData?.areaMapping?.ward || "");
+  const [district, setDistrict] = useState( searchResult?.areaMapping?.district || formData?.areaMapping?.district ||  "");
+  const [planningArea, setPlanningArea] = useState(formData?.areaMapping?.planningArea || searchResult?.areaMapping?.planningArea || "");
+  const [ppAuthority, setPpAuthority] = useState(formData?.areaMapping?.ppAuthority || searchResult?.areaMapping?.planningPermitAuthority || "");
+  const [bpAuthority, setBpAuthority] = useState(formData?.areaMapping?.bpAuthority || searchResult?.areaMapping?.buildingPermitAuthority || "");
+  const [revenueVillage, setRevenueVillage] = useState(formData?.areaMapping?.revenueVillage || searchResult?.areaMapping?.revenueVillage || "");
+  const [mouza, setMouza] = useState(formData?.areaMapping?.mouza || searchResult?.areaMapping?.mouza || "");
+  const [ward, setWard] = useState(formData?.areaMapping?.ward || searchResult?.areaMapping?.ward || "");
   
   // State for dropdown options
   const [districts, setDistricts] = useState([]);

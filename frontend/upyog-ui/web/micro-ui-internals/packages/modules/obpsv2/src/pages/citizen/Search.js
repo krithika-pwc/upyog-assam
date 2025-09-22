@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
-
+import useOBPSV2Search from "../../../../../libraries/src/hooks/obpsv2/useOBPSV2Search";
 const Search = ({ path }) => {
   const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
   const userInfo = userInfos ? JSON.parse(userInfos) : {};
@@ -11,18 +11,15 @@ const Search = ({ path }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
   const details = () => {
-    if (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length <= 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length > 0) return "BUILDING_PLAN_SCRUTINY";
-    if (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length > 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length <= 0) return "BPA_STAKEHOLDER_REGISTRATION";
-    else return "BUILDING_PLAN_SCRUTINY"
+    return "NEW_CONSTRUCTION"
   }
   const [selectedType, setSelectedType] = useState(details());
   const [payload, setPayload] = useState({});
   const [searchData, setSearchData] = useState({});
 
   useEffect(()=>{
-    if (location.pathname === "/upyog-ui/citizen/obps/search/application" || location.pathname === "/upyog-ui/employee/obps/search/application") {
-      Digit.SessionStorage.del("OBPS.INBOX")
-      Digit.SessionStorage.del("STAKEHOLDER.INBOX")
+    if (location.pathname === "/upyog-ui/citizen/obpsv2/rtp/search/application" || location.pathname === "/upyog-ui/employee/obps/search/application") {
+      Digit.SessionStorage.del("OBPSV2.INBOX")
     }
   },[location.pathname])
 
@@ -38,12 +35,6 @@ const Search = ({ path }) => {
   const [paramerror,setparamerror] = useState("")
 
   function onSubmit(_data) {
-    if (_data?.applicationType?.code === "BPA_STAKEHOLDER_REGISTRATION"){
-      const isSearchAllowed = checkData(_data)
-      if(!isSearchAllowed){
-        setparamerror("BPA_ADD_MORE_PARAM_STAKEHOLDER")
-      }
-    }
     setSearchData(_data);
     var fromDate = new Date(_data?.fromDate);
     fromDate?.setSeconds(fromDate?.getSeconds() - 19800);
@@ -65,33 +56,10 @@ const Search = ({ path }) => {
 
   let params = {};
   let filters = {};
-  
-
-  
-  if (
-    (selectedType && selectedType.includes("STAKEHOLDER")) ||
-    (Object.keys(payload).length > 0 && payload?.applicationType && payload?.applicationType.includes("STAKEHOLDER"))
-  ) {
-    if (Object.entries(payload).length <= 2 && Object.keys(payload).filter((ob) => ob === "applicationType").length == 0) {
-    } else {
-      let filters = payload;
-      if (payload.applicationNo) {
-        payload["applicationNumber"] = payload.applicationNo;
-        payload.applicationNo = "";
-      }
-      if (payload && payload["applicationType"]) delete payload["applicationType"];
-      if(payload && payload["serviceType"])
-      {
-        payload["tradeType"] = payload["serviceType"]
-        delete payload["serviceType"];
-      }
-      params = { ...payload, tenantId: Digit.ULBService.getStateId() };
-    }
-  } else {
     if (Object.keys(payload).length === 0) {
       let payload1 = {
-        applicationType: "BUILDING_PLAN_SCRUTINY",
-        serviceType: "NEW_CONSTRUCTION",
+        applicationType: "NEW_CONSTRUCTION",
+        // serviceType: "NEW_CONSTRUCTION",
         ...(window.location.href.includes("/search/obps-application") && {
           mobileNumber: Digit.UserService.getUser()?.info?.mobileNumber,
         }),
@@ -99,9 +67,15 @@ const Search = ({ path }) => {
 
       setPayload({ ...payload, ...payload1 });
     }
-    filters = payload;
-  }
-  const { data: bpaData = [], isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = []
+  filters = payload;
+  const { data: bpaData = [], isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = useOBPSV2Search(
+    selectedType,
+    payload,
+    tenantId,
+    filters,
+    params,
+    {enabled:paramerror===""}
+  );
   return (
     <Search
       t={t}

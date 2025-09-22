@@ -33,7 +33,7 @@ export const SearchForm = ({ children, onSubmit, handleSubmit, id, className = "
     );
   }
   return (
-    <form className={`search-form-wrapper ${className}`} onSubmit={handleSubmit(onSubmit)} {...{ id }}>
+    <form style={{marginLeft:"24px"}} className={`search-form-wrapper ${className}`} onSubmit={handleSubmit(onSubmit)} {...{ id }}>
       {children}
     </form>
   );

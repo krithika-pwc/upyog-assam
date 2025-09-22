@@ -5,6 +5,7 @@ import { Loader, CitizenHomeCard, OBPSIcon, CitizenInfoLabel } from "@upyog/digi
 import CitizenApp from "./pages/citizen";
 import Create from "./pages/citizen/Create";
 import RTPCreate from "./pages/citizen/RTPCreate";
+import Inbox from "./pages/citizen/RTPInbox";
 import Edit from "./pages/citizen/EditApplication";
 import ApplicantDetails  from "./pageComponents/ApplicantDetails";
 import AddressDetails from "./pageComponents/AddressDetails";
@@ -19,7 +20,6 @@ import Form22A from "./pageComponents/Form22A";
 import Form23A from "./pageComponents/Form23A";
 import Form23B from "./pageComponents/Form23B";
 import OBPASCitizenHomeScreen from "./pages/citizen/home";
-import Inbox from "./pages/employee/Inbox";
 import RTPForm from "./pageComponents/RTPForm";
 import EmployeeApp from "./pages/employee";
 import BPAApplicationDetails from "./pages/citizen/ApplicationDetails";
@@ -78,6 +78,7 @@ const componentsToRegister = {
   LandDetails,
   BPACreate: Create,
   RTPCreate,
+  RTPInbox: Inbox,
   CheckPage,
   BPAMyApplications,
   AreaMapping,

@@ -80,9 +80,9 @@ const RTPAcknowledgement = (props) => {
       {edcrData.status == "Accepted" ?
         <Card style={{ padding: "0px" }}>
           <Banner
-            message={t("EDCR_ACKNOWLEDGEMENT_SUCCESS_MESSAGE_LABEL")}
+            message={t("RTP_ACKNOWLEDGEMENT_SUCCESS_MESSAGE_LABEL")}
             applicationNumber={edcrData?.edcrNumber}
-            info={t("EDCR_SCRUTINY_NUMBER_LABEL")}
+            info={t("RTP_SCRUTINY_NUMBER_LABEL")}
             successful={true}
             infoStyles = {{fontSize: "18px", lineHeight: "21px", fontWeight: "bold", textAlign: "center", padding: "0px 15px"}}
             applicationNumberStyles = {{fontSize: "24px", lineHeight: "28px", fontWeight: "bold", marginTop: "10px"}}
@@ -93,7 +93,7 @@ const RTPAcknowledgement = (props) => {
             <svg width="20" height="23" viewBox="0 0 20 23" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M19.3334 8H14V0H6.00002V8H0.666687L10 17.3333L19.3334 8ZM0.666687 20V22.6667H19.3334V20H0.666687Z" fill="#a82227" />
             </svg>
-            {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
+            {t("RTP_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
           </div>
           <div style={{padding: "0px 10px"}}>
             <Link to={{pathname: `/upyog-ui/citizen/obps/${bpaLinks?.linkData?.flow?.toLowerCase()}/${edcrData?.appliactionType?.toLowerCase()}/${edcrData?.applicationSubType?.toLowerCase()}/docs-required`, state: bpaLinks}} replace>
@@ -109,7 +109,7 @@ const RTPAcknowledgement = (props) => {
         </Card> :
         <Card style={{ padding: "0px" }}>
           <Banner
-            message={t("EDCR_ACKNOWLEDGEMENT_REJECTED_MESSAGE_LABEL")}
+            message={t("RTP_ACKNOWLEDGEMENT_REJECTED_MESSAGE_LABEL")}
             applicationNumber={""}
             info={""}
             successful={false}

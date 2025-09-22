@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from "react";
 import { FormStep, TextInput, CardLabel, RadioButtons, Dropdown, CheckBox, CardHeader, UploadFile, Toast } from "@upyog/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
-const LandDetails = ({ t, config, onSelect, formData }) => {
+const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
 
   // Future Provision Options
   const futureProvisionOptions = [
@@ -283,8 +283,7 @@ const LandDetails = ({ t, config, onSelect, formData }) => {
           !rtpCategory || 
           !registeredTechnicalPerson || 
           !occupancyType || 
-          (todBenefits?.code === "YES" && !todAcknowledgement) ||
-          !uploadedForm39Id // Form 39 is required
+          (todBenefits?.code === "YES" && !todAcknowledgement) // Form 39 is required
         }
       >
         <div>

@@ -1,22 +1,49 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
-import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
+import {
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+  useRouteMatch,
+  useParams
+} from "react-router-dom";
 import { editApplicationConfig } from "../../../config/editApplicationConfig";
+import { Loader } from "@upyog/digit-ui-react-components";
+import useBPAV2Search from "../../../../../../libraries/src/hooks/obpsv2/useBPAV2Search";
 
 const Edit = () => {
   const queryClient = useQueryClient();
+  const { applicationNo } = useParams();
   const match = useRouteMatch();
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const history = useHistory();
   const stateId = Digit.ULBService.getStateId();
-  let config = [];
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("OBPSV2_CREATE", {});
-  const goNext = (skipStep, index, isAddMultiple, key) => {
 
-    
-    
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("OBPSV2_CREATE", {});
+  const tenantId = "pg.citya";
+  const { isLoading, isError, error, data } = useBPAV2Search({
+    tenantId,
+    filters: { applicationNo },
+    config: { staleTime: Infinity, cacheTime: Infinity }
+  });
+  const config = useMemo(() => {
+    let merged = [];
+    editApplicationConfig.forEach((obj) => {
+      merged = merged.concat(obj.body.filter((a) => !a.hideInCitizen));
+    });
+    merged.indexRoute = "area-mapping";
+    return merged;
+  }, []);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  const goNext = (skipStep, index, isAddMultiple, key) => {
     let currentPath = pathname.split("/").pop(),
       lastchar = currentPath.charAt(currentPath.length - 1),
       isMultiple = false,
@@ -37,8 +64,7 @@ const Edit = () => {
     if (!isNaN(lastchar)) {
       isMultiple = true;
     }
-    let { nextStep = {} } = config.find((routeObj) => routeObj.route === (currentPath || '0'));
-    
+    let { nextStep = {} } = config.find((routeObj) => routeObj.route === (currentPath || "0")) || {};
     let redirectWithHistory = history.push;
     if (skipStep) {
       redirectWithHistory = history.replace;
@@ -47,30 +73,25 @@ const Edit = () => {
       nextStep = key;
     }
     if (nextStep === null) {
-      return redirectWithHistory(`${match.path}/check`);
+      return redirectWithHistory(`${match.url}/check`);
     }
     if (!isNaN(nextStep.split("/").pop())) {
-      nextPage = `${match.path}/${nextStep}`;
-    }
-     else {
-      nextPage = isMultiple && nextStep !== "map" ? `${match.path}/${nextStep}/${index}` : `${match.path}/${nextStep}`;
+      nextPage = `${match.url}/${nextStep}`;
+    } else {
+      nextPage =
+        isMultiple && nextStep !== "map"
+          ? `${match.url}/${nextStep}/${index}`
+          : `${match.url}/${nextStep}`;
     }
     redirectWithHistory(nextPage);
   };
 
-
-  if(params && Object.keys(params).length>0 && window.location.href.includes("/searchhall") && sessionStorage.getItem("docReqScreenByBack") !== "true")
-    {
-      clearParams();
-      queryClient.invalidateQueries("OBPSV2_CREATE");
-    }
-
   const acknowledgement = async () => {
-    history.push(`${match.path}/acknowledgement`);
+    history.push(`${match.url}/acknowledgement`);
   };
 
-  function handleSelect(key, data, skipStep, index, isAddMultiple = false) {
-      setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
+  function handleSelect(key, formData, skipStep, index, isAddMultiple = false) {
+    setParams({ ...params, ...{ [key]: { ...params[key], ...formData } } });
     goNext(skipStep, index, isAddMultiple, key);
   }
 
@@ -81,42 +102,44 @@ const Edit = () => {
     clearParams();
     queryClient.invalidateQueries("OBPSV2_CREATE");
   };
-  /* use newConfig instead of commonFields for local development in case needed */
-  let commonFields = editApplicationConfig;
-  commonFields.forEach((obj) => {
-    config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
-  });
-  
-  config.indexRoute = "applicant-details";
+
   const CheckPage = Digit?.ComponentRegistryService?.getComponent("CheckPage");
   const BPAAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
+
   return (
     <Switch>
       {config.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
-        const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
-        
+        const Component =
+          typeof component === "string"
+            ? Digit.ComponentRegistryService.getComponent(component)
+            : component;
+
         return (
-          <Route path={`${match.path}/${routeObj.route}`} key={index}>
-            <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} onAdd={handleMultiple} />
+          <Route path={`${match.url}/${routeObj.route}`} key={index}>
+            <Component
+              config={{ texts, inputs, key }}
+              onSelect={handleSelect}
+              onSkip={handleSkip}
+              onAdd={handleMultiple}
+              t={t}
+              formData={params}
+              searchResult={data?.[0]}
+            />
           </Route>
         );
       })}
-      <Route path={`${match.path}/check`}>
-              <CheckPage onSubmit={acknowledgement} value={params} />
-            </Route>
-            <Route path={`${match.path}/acknowledgement`}>
-                    <BPAAcknowledgement data={params} onSuccess={onSuccess} />
-                  </Route>
 
-      {/* <Route path={`${match.path}/check`}>
-        <CheckPage onSubmit={chbcreate} value={params} />
+      <Route path={`${match.url}/check`}>
+        <CheckPage onSubmit={acknowledgement} value={params} searchResult={data} />
       </Route>
-      <Route path={`${match.path}/acknowledgement`}>
-        <CHBAcknowledgement data={params} onSuccess={onSuccess} />
-      </Route> */}
+
+      <Route path={`${match.url}/acknowledgement`}>
+        <BPAAcknowledgement data={params} searchResult={data} onSuccess={onSuccess} />
+      </Route>
+
       <Route>
-        <Redirect to={`${match.path}/${config.indexRoute}`} />
+        <Redirect to={`${match.url}/${config.indexRoute}`} />
       </Route>
     </Switch>
   );

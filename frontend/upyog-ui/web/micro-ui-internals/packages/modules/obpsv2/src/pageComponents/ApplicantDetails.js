@@ -2,19 +2,19 @@ import React, { useEffect, useState } from "react";
 import { FormStep, TextInput, CardLabel, MobileNumber } from "@upyog/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
-const ApplicantDetails = ({ t, config, onSelect, formData }) => {
+const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
   const user = Digit.UserService.getUser().info;
   const flow = window.location.href.includes("editApplication") ? "editApplication" : "buildingPermit"
 
   // Applicant Fields
-  const [applicantName, setApplicantName] = useState(formData?.applicant?.applicantName || "");
-  const [emailId, setEmail] = useState(formData?.applicant?.emailId || "");
-  const [mobileNumber, setMobileNumber] = useState(formData?.applicant?.mobileNumber || user?.mobileNumber);
-  const [alternateNumber, setAltMobileNumber] = useState(formData?.applicant?.alternateNumber || "");
+  const [applicantName, setApplicantName] = useState(formData?.applicant?.applicantName || searchResult?.landInfo?.owners?.[0]?.name || "");
+  const [emailId, setEmail] = useState(formData?.applicant?.emailId || searchResult?.landInfo?.owners?.[0]?.emailId || "");
+  const [mobileNumber, setMobileNumber] = useState(formData?.applicant?.mobileNumber ||  searchResult?.landInfo?.owners?.[0]?.mobileNumber || user?.mobileNumber);
+  const [alternateNumber, setAltMobileNumber] = useState(formData?.applicant?.alternateNumber || searchResult?.landInfo?.owners?.[0]?.alternateNumber || "");
   const [fatherName, setFatherName] = useState(formData?.applicant?.fatherName || "");
   const [motherName, setMotherName] = useState(formData?.applicant?.motherName || "");
-  const [panCardNumber, setPanCardNumber] = useState(formData?.applicant?.panCardNumber || "");
-  const [aadhaarNumber, setAadhaarNumber] = useState(formData?.applicant?.aadhaarNumber || "");
+  const [panCardNumber, setPanCardNumber] = useState(formData?.applicant?.panCardNumber || searchResult?.landInfo?.owners?.[0]?.pan || "");
+  const [aadhaarNumber, setAadhaarNumber] = useState(formData?.applicant?.aadhaarNumber || searchResult?.landInfo?.owners?.[0]?.aadhaarNumber ||"");
 
   // Go next
   const goNext = () => {
@@ -30,7 +30,7 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
     };
 
     onSelect(config.key, { ...formData[config.key], ...applicantStep });
-    console.log(applicantStep);
+    
   };
 
   const onSkip = () => onSelect();

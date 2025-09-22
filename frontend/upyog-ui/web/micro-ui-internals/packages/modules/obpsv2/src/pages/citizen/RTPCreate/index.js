@@ -4,15 +4,14 @@ import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import { newConfig } from "../../../config/rtpConfig";
 import { uuidv4 } from "../../../utils";
-const RTPCreate = () => {
-console.log("u r in rtp craete")
+const RTPCreate = ({ parentRoute }) => {
   const queryClient = useQueryClient();
     const match = useRouteMatch();
     const { t } = useTranslation();
     const { pathname } = useLocation();
     const history = useHistory();
     let config = [];
-    const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("RTP_CREATE", {});
+    const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("EDCR_CREATE", {});
     const [isShowToast, setIsShowToast] = useState(null);
     const [isSubmitBtnDisable, setIsSubmitBtnDisable] = useState(false);
     Digit.SessionStorage.set("RTP_BACK", "IS_RTP_BACK");
@@ -24,9 +23,9 @@ console.log("u r in rtp craete")
       setIsSubmitBtnDisable(true);
       const loggedInuserInfo = Digit.UserService.getUser();
       const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
-      let RTPRequest = {
+      let edcrRequest = {
         transactionNumber: "",
-        rtpNumber: "",
+        edcrNumber: "",
         planFile: null,
         tenantId: "",
         RequestInfo: {
@@ -45,28 +44,26 @@ console.log("u r in rtp craete")
   
       const applicantName = data?.applicantName;
       const file = data?.file;
-      const tenantId = data?.tenantId?.code;
+      const tenantId = "assam";
       const transactionNumber = uuidv4();
       const appliactionType = "BUILDING_PLAN_SCRUTINY";
       const applicationSubType = "NEW_CONSTRUCTION";
-  
-      RTPRequest = { ...RTPRequest, tenantId };
-      RTPRequest = { ...RTPRequest, transactionNumber };
-      RTPRequest = { ...RTPRequest, applicantName };
-      RTPRequest = { ...RTPRequest, appliactionType };
-      RTPRequest = { ...RTPRequest, applicationSubType };
-  
+      edcrRequest = { ...edcrRequest, tenantId };
+      edcrRequest = { ...edcrRequest, transactionNumber };
+      edcrRequest = { ...edcrRequest, applicantName };
+      edcrRequest = { ...edcrRequest, appliactionType };
+      edcrRequest = { ...edcrRequest, applicationSubType };
       let bodyFormData = new FormData();
-      bodyFormData.append("RTPRequest", JSON.stringify(RTPRequest));
+      bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));
       bodyFormData.append("planFile", file);
-  
       Digit.OBPSV2Services.rtpcreate({ data: bodyFormData }, tenantId)
         .then((result, err) => {
           setIsSubmitBtnDisable(false);
-          if (result) {
-            setParams(result);
+          if (result?.data?.edcrDetail) {
+            setParams(result?.data?.edcrDetail);
             history.replace(
-              `/upyog-ui/citizen/obpsv2/rtp/apply/acknowledgement`, 
+              `/upyog-ui/citizen/obpsv2/rtp/apply/acknowledgement`, ///${result?.data?.edcrDetail?.[0]?.edcrNumber}
+              { data: result?.data?.edcrDetail }
             );
           }
         })

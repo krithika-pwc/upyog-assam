@@ -39,8 +39,15 @@ const RTPForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addN
     }
 
     function selectfile(e) {
-        setUploadedFile(e.target.files[0]);
-        setFile(e.target.files[0]);
+        let value = e.target.value;
+        if(!value.includes("dxf")){
+            setError("Only .dxf files are accepted")
+        }
+        else {
+            setUploadedFile(e.target.files[0]);
+            setFile(e.target.files[0]);
+            setError(null)
+        }  
     }
 
     const onSkip = () => {
@@ -133,9 +140,9 @@ const RTPForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addN
             />
             <CardLabel>{`${t("BPA_PLAN_DIAGRAM_LABEL")}`}<span className="check-page-link-button"> *</span></CardLabel>
             <UploadFile
-                id={"rtp-doc"}
+                id={"edcr-doc"}
                 extraStyleName={"propertyCreate"}
-                // accept=".dxf"
+                accept=".dxf"
                 onUpload={selectfile}
                 onDelete={() => {
                     setUploadedFile(null);
@@ -145,7 +152,7 @@ const RTPForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addN
                 error={error}
                 uploadMessage={uploadMessage}
             />
-            <div style={{ disabled: "true", height: "30px", width: "100%", fontSize: "14px" }}>{t("RTP_UPLOAD_FILE_LIMITS_LABEL")}</div>
+            <div style={{ disabled: "true", height: "30px", width: "100%", fontSize: "14px" }}>{t("EDCR_UPLOAD_FILE_LIMITS_LABEL")}</div>
             {isShowToast && <Toast error={isShowToast.key} label={t(isShowToast.label)} onClose={() => setIsShowToast(null)} isDleteBtn={true} />}
             {/* {isSubmitBtnDisable ? <Loader /> : null} */}
         </FormStep>

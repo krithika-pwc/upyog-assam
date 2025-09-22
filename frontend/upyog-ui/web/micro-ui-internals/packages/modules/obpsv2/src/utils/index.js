@@ -49,7 +49,7 @@ export const checkForNA = (value = "") => {
 };
 
 export const bpaPayload = (data) => {
-  console.log("data in bpa payload", data);
+
 
   // Permanent Address
   const permanentAddress = {
@@ -181,6 +181,73 @@ export const bpaPayload = (data) => {
 
   return formdata;
 };
+
+export const bpaEditPayload = (data) =>{
+  const formdata={
+    BPA: {
+        tenantId: data?.tenantId,
+        areaMapping:{
+          buildingPermitAuthority: data?.areaMapping?.bpAuthority?.code,
+          district: data?.areaMapping?.district?.code,
+          mouza: data?.areaMapping?.mouza?.code || data?.areaMapping?.mouza,
+          planningArea: data?.areaMapping?.planningArea?.code,
+          planningPermitAuthority: data?.areaMapping?.ppAuthority?.code,
+          revenueVillage: data?.areaMapping?.revenueVillage?.code,
+          ward: data?.areaMapping?.ward
+        },
+
+        documents: data?.land?.documents?.map((doc) =>({
+          ...doc,
+        })) || [],
+        
+        landInfo:{
+          address:{
+            addressLine1: data?.address?.permanent?.addressLine1,
+            addressLine2: data?.address?.permanent?.addressLine2,
+            city: data?.address?.permanent?.city?.code,
+            country: "INDIA",
+            district: data?.address?.permanent?.district?.code,
+            houseNo: data?.address?.permanent?.houseNo,
+            pincode: data?.address?.permanent?.pincode,
+            state: data?.address?.permanent?.state?.code,
+            tenantId: data?.tenantId
+          },
+            documents: data?.land?.documents?.map((doc) =>({
+              ...doc,
+            })) || [],
+            newDagNumber: data?.land?.newDagNumber,
+            newPattaNumber: data?.land?.newPattaNumber,
+            oldDagNumber: data?.land?.oldDagNumber,
+            oldPattaNumber: data?.land?.oldPattaNumber,
+            totalPlotArea: data?.land?.totalPlotArea,
+            owners:{
+              aadhaarNumber: data?.applicant?.aadhaarNumber,
+              panNumber:data?.applicant?.panCardNumber,
+              mobileNumber: data?.applicant?.mobileNumber,
+              altContactNumber: data?.applicant?.alternateNumber,
+              name: data?.applicant?.applicantName,
+              emailId: data?.applicant?.emailId,
+              fatherOrHusbandName: data?.applicant?.fatherName,
+              motherName: data?.applicant?.motherName
+            },
+            rtpDetails:{
+              rtpCategory: data?.land?.rtpCategory?.code,
+              rtpName: data?.land?.registeredTechnicalPerson?.code
+            },
+            units:{
+              occupancyType: data?.land?.occupancyType?.code,
+            }
+          },
+        workflow:{
+          action:"APPLY",
+          comments:""
+        }
+    },
+  };
+  return formdata;
+};
+
+
 
 export const sortDropdownNames = (options, optionkey, locilizationkey) => {
   return options.sort((a, b) => locilizationkey(a[optionkey]).localeCompare(locilizationkey(b[optionkey])));

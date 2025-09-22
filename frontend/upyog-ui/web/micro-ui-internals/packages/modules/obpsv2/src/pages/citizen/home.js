@@ -20,11 +20,11 @@ const OBPASCitizenHomeScreen = ({ parentRoute }) => {
       links: [
         {
         
-          label: t("ES_COMMON_OBPS_RTA_INBOX_LABEL"),
+          label: t("ES_COMMON_OBPS_RTP_INBOX_LABEL"),
           link: `/upyog-ui/citizen/obpsv2/rtp/inbox`,
         },
         {
-          label: t("ES_COMMON_RTA_SEARCH_APPLICATION"),
+          label: t("ES_COMMON_RTP_SEARCH_APPLICATION"),
           link: `/upyog-ui/citizen/obpsv2/rtp/search/application`
         },
       ],

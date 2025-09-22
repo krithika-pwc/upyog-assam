@@ -38,6 +38,7 @@ const RTASearchApplication = ({ tenantId, t, onSubmit, data, error, searchData, 
       limit: 10,
       sortBy: "commencementDate",
       sortOrder: "DESC",
+      applicationType : "NEW_CONSTRUCTION",
       ...searchData,
     },
   });
@@ -63,6 +64,7 @@ const RTASearchApplication = ({ tenantId, t, onSubmit, data, error, searchData, 
         limit: 10,
         sortBy: "commencementDate",
         sortOrder: "DESC",
+        applicationType: "NEW_CONSTRUCTION",
         ...searchData,
         isSubmitSuccessful: false,
       })
@@ -120,9 +122,9 @@ const RTASearchApplication = ({ tenantId, t, onSubmit, data, error, searchData, 
 
   const getRedirectionLink = (bService) => {
     const businessService = data?.[0]?.businessService == "BPAREG" ?  "BPAREG" : bService;
-    let redirectBS = businessService === "BPAREG" ? "search/application/stakeholder" : "search/application/bpa";
+    let redirectBS = ""
     if (window.location.href.includes("/citizen")) {
-      redirectBS = businessService === "BPAREG"?"stakeholder":"bpa";
+      redirectBS = "bpa-services";
     }
     return redirectBS;
   };
@@ -265,7 +267,7 @@ const RTASearchApplication = ({ tenantId, t, onSubmit, data, error, searchData, 
       <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
         <SearchFormFieldsComponent {...searchFormFieldsComponentProps} />
       </SearchForm>
-     
+        {!isLoading && data?.[0]?.display ? (
         <Card style={{ marginTop: 20 }}>
           {t(data?.[0]?.display)
             .split("\\n")
@@ -275,7 +277,51 @@ const RTASearchApplication = ({ tenantId, t, onSubmit, data, error, searchData, 
               </p>
             ))}
         </Card>
-     
+        ) : !showToast ? (
+                !isLoading ? (
+                  <Table
+                    t={t}
+                    data={data}
+                    columns={columns}
+                    getCellProps={(cellInfo) => {
+                      return {
+                        style: {
+                          minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                          padding: "20px 18px",
+                          fontSize: "16px",
+                        },
+                      };
+                    }}
+                    onPageSizeChange={onPageSizeChange}
+                    //currentPage={getValues("offset")/getValues("limit")}
+                    currentPage={currPage}
+                    onNextPage={nextPage}
+                    onPrevPage={previousPage}
+                    pageSizeLimit={getValues("limit")}
+                    onSort={onSort}
+                    totalRecords={Count}
+                    disableSort={false}
+                    onLastPage={fetchLastPage}
+                    onFirstPage={fetchFirstPage}
+                    sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+                  />
+                ) : (
+                  <Loader />
+                )
+              ) : (
+                ""
+              )}
+              {showToast && (
+                  <Toast
+                   warning={showToast.label == "BPA_ADD_MORE_PARAM_STAKEHOLDER" ? true : false}
+                   error={showToast.label == "BPA_ADD_MORE_PARAM_STAKEHOLDER" ? false : showToast.key}
+                   label={t(showToast.label)}
+                   isDleteBtn={true}
+                   onClose={() => {
+                   setShowToast(null);
+                  }}
+                 />
+              )}
        {/* {  (
           <Table
             t={t}

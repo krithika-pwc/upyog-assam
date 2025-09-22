@@ -129,7 +129,7 @@ const InboxComposer = ({
     };
 
     const getSearchActionText = () => {
-      if (window.location.href.includes("/obps")) {
+      if (window.location.href.includes("/obpsv2")) {
         return t("ES_INBOX_COMMON_SEARCH")
       } else {
         return t("ES_COMMON_SEARCH")
@@ -169,7 +169,7 @@ const InboxComposer = ({
   }
 
   const isEnabledCommonModules =
-    window.location.href.includes("/obps/") ||
+    window.location.href.includes("/obpsv2/") ||
     window.location.href.includes("/noc/") ;
 
   const isEnabledWSCommonModules = window.location.href.includes("/ws/water/inbox") || window.location.href.includes("/ws/sewerage/inbox") ||
@@ -190,14 +190,15 @@ const InboxComposer = ({
             </FilterForm>
           </div>
         </div>
-        <div style={propsForInboxTable?.tableStyle ? { flex: 1, ...propsForInboxTable?.tableStyle}:{flex: 1}}>
+        <div style={propsForInboxTable?.tableStyle ? { flex: 1, style:{marginLeft:"24px"}, ...propsForInboxTable?.tableStyle}:{flex: 1, style:{marginLeft:"24px"}}}>
+          <div style= {{marginTop: "10px", marginBottom: "16px"}}>
           <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="rm-mb form-field-flex-one">
             <SearchFormFields
               registerRef={registerSearchFormField}
               searchFormState={searchFormState}
               {...{ controlSearchForm }}
               searchFieldComponents={
-                <div style={window.location.href.includes("/citizen/obps") ? {display : "flex"} : {}}>
+                <div style={window.location.href.includes("/citizen/obpsv2") ? {display : "flex", gap : "60px"} : {}}>
                   <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form" className="submit-bar-search" />
                   <p onClick={onResetSearchForm} className="clear-search" style={{ paddingTop: "9px", color: " #a82227" }}>
                     {t(`ES_COMMON_CLEAR_SEARCH`)}
@@ -206,6 +207,7 @@ const InboxComposer = ({
               }
             />
           </SearchForm>
+          </div>
           <div className="result" style={{ marginLeft: "24px", flex: 1 }}>
             {isInboxLoading ? (
               <Loader />

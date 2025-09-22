@@ -17,7 +17,7 @@ export const OBPSV2Services= {
     }),
     rtpcreate: (data, tenantId) =>
     Request({
-      url: Urls.obpsv2.rtpcreate,
+      url: Urls.edcr.create,
       // data: data,
       multipartData: data,
       useCache: false,
@@ -27,6 +27,19 @@ export const OBPSV2Services= {
       params: { tenantId },
       auth: true,
       multipartFormData: true
+    }),
+    anonymousCreate: (data, tenantId) =>
+      Request({
+        url: Urls.edcr.anonymousCreate,
+        // data: data,
+        multipartData: data,
+        useCache: false,
+        setTimeParam: false,
+        userService: true,
+        method: "POST",
+        params: { tenantId },
+        auth: false,
+        multipartFormData: true
     }),
 
   update: (details) => 

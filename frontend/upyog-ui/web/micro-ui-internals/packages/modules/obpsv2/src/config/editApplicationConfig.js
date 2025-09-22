@@ -3,6 +3,20 @@ export const editApplicationConfig = [
       head: "ES_TITILE_APPLICANT_DETAILS",
       body: [
         {
+          route: "area-mapping",
+          component: "AreaMapping",
+          withoutLabel: true,
+          key: "areaMapping",
+          type: "component",
+          nextStep: "applicant-details",
+          hideInEmployee: true,
+          isMandatory: true,
+          texts: {
+            header:"BPA_AREA_MAPPING",
+            submitBarLabel: "CS_COMMON_NEXT",
+          },
+        },
+        {
           route: "applicant-details",
           component: "ApplicantDetails",
           withoutLabel: true,
