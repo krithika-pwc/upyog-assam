@@ -18,7 +18,6 @@ import org.egov.land.web.models.Institution;
 import org.egov.land.web.models.LandInfo;
 import org.egov.land.web.models.OwnerInfoV2;
 import org.egov.land.web.models.Unit;
-import org.egov.land.web.models.Relationship;
 import org.egov.land.web.models.Source;
 import org.egov.land.web.models.Status;
 import org.springframework.dao.DataAccessException;
@@ -37,59 +36,55 @@ public class LandRowMapper implements ResultSetExtractor<List<LandInfo>> {
 
 		while (rs.next()) {
 			String id = rs.getString("land_id");
-			if (id == null)
-				continue;
+			if (id == null) continue;
 
 			LandInfo currentLandInfo = landMap.get(id);
-			String tenantId = rs.getString("landInfo_tenantId");
+			String tenantId = rs.getString("land_tenant_id");
 
 			if (currentLandInfo == null) {
 
-				// created / lastModified times (safely handle SQL NULLs)
-				Long createdTime = rs.getLong("landInfo_createdTime");
-				if (rs.wasNull())
-					createdTime = null;
-				Long lastModifiedTime = rs.getLong("landInfo_lastModifiedTime");
-				if (rs.wasNull())
-					lastModifiedTime = null;
+				// created / lastModified times
+				Long createdTime = rs.getLong("land_created_time");
+				if (rs.wasNull()) createdTime = null;
+				Long lastModifiedTime = rs.getLong("land_last_modified_time");
+				if (rs.wasNull()) lastModifiedTime = null;
 
 				// additional details JSON
-				String additionalDetailsStr = rs.getString("additional_details");
+				String additionalDetailsStr = rs.getString("land_additional_details");
 				Object additionalDetails = null;
 				if (additionalDetailsStr != null && !additionalDetailsStr.equals("{}") && !additionalDetailsStr.equals("null")) {
 					additionalDetails = new Gson().fromJson(additionalDetailsStr, Object.class);
 				}
 
 				AuditDetails auditdetails = AuditDetails.builder()
-						.createdBy(rs.getString("landInfo_createdBy"))
+						.createdBy(rs.getString("land_created_by"))
 						.createdTime(createdTime)
-						.lastModifiedBy(rs.getString("landInfo_lastModifiedBy"))
+						.lastModifiedBy(rs.getString("land_last_modified_by"))
 						.lastModifiedTime(lastModifiedTime)
 						.build();
 
 				// geolocation
-				Double latitude = (Double) rs.getObject("latitude");
-				Double longitude = (Double) rs.getObject("longitude");
+				GeoLocation geoLocation = GeoLocation.builder()
+						.id(rs.getString("geo_id"))
+						.latitude((Double) rs.getObject("latitude"))
+						.longitude((Double) rs.getObject("longitude"))
+						.build();
 
 				Boundary locality = Boundary.builder().code(rs.getString("locality")).build();
 
-				GeoLocation geoLocation = GeoLocation.builder()
-						.id(rs.getString("landInfo_geo_loc"))
-						.latitude(latitude)
-						.longitude(longitude)
-						.build();
-
-				// address (match fields used in your model)
+				// address
 				Address address = Address.builder()
+						.id(rs.getString("land_address_id"))
 						.houseNo(rs.getString("house_no"))
+						.addressLine1(rs.getString("address_line_1"))
+						.addressLine2(rs.getString("address_line_2"))
+						.landmark(rs.getString("landmark"))
 						.district(rs.getString("district"))
 						.region(rs.getString("region"))
 						.state(rs.getString("state"))
 						.country(rs.getString("country"))
-						.id(rs.getString("landInfo_ad_id"))
-						.landmark(rs.getString("landmark"))
-						.geoLocation(geoLocation)
 						.pincode(rs.getString("pincode"))
+						.geoLocation(geoLocation)
 						.tenantId(tenantId)
 						.locality(locality)
 						.build();
@@ -99,8 +94,13 @@ public class LandRowMapper implements ResultSetExtractor<List<LandInfo>> {
 						.id(id)
 						.landUId(rs.getString("land_uid"))
 						.landUniqueRegNo(rs.getString("land_regno"))
+						.oldDagNumber(rs.getString("old_dag_no"))
+						.newDagNumber(rs.getString("new_dag_no"))
+						.oldPattaNumber(rs.getString("old_patta_no"))
+						.newPattaNumber(rs.getString("new_patta_no"))
+						.totalPlotArea(rs.getBigDecimal("total_plot_area"))
 						.tenantId(tenantId)
-						.status(rs.getString("status") != null ? Status.fromValue(rs.getString("status")) : null)
+						.status(rs.getString("land_status") != null ? Status.fromValue(rs.getString("land_status")) : null)
 						.address(address)
 						.ownershipCategory(rs.getString("ownership_category"))
 						.source(rs.getString("source") != null ? Source.fromValue(rs.getString("source")) : null)
@@ -123,26 +123,25 @@ public class LandRowMapper implements ResultSetExtractor<List<LandInfo>> {
 		String tenantId = landInfo.getTenantId();
 
 		AuditDetails auditdetails = AuditDetails.builder()
-				.createdBy(rs.getString("landInfo_createdBy"))
-				.createdTime(rs.getLong("landInfo_createdTime"))
-				.lastModifiedBy(rs.getString("landInfo_lastModifiedBy"))
-				.lastModifiedTime(rs.getLong("landInfo_lastModifiedTime"))
+				.createdBy(rs.getString("land_created_by"))
+				.createdTime(rs.getLong("land_created_time"))
+				.lastModifiedBy(rs.getString("land_last_modified_by"))
+				.lastModifiedTime(rs.getLong("land_last_modified_time"))
 				.build();
 
 		// Unit
-		String unitId = rs.getString("landInfo_un_id");
+		String unitId = rs.getString("unit_id");
 		if (unitId != null) {
 			Long occupancyDate = null;
 			long occ = rs.getLong("occupancy_date");
-			if (!rs.wasNull())
-				occupancyDate = occ;
+			if (!rs.wasNull()) occupancyDate = occ;
 
 			Unit unit = Unit.builder()
 					.id(unitId)
 					.floorNo(rs.getString("floor_no"))
 					.unitType(rs.getString("unit_type"))
 					.usageCategory(rs.getString("usage_category"))
-					.occupancyType(rs.getString("occupancy_type") != null ? rs.getString("occupancy_type") : null)
+					.occupancyType(rs.getString("occupancy_type"))
 					.occupancyDate(occupancyDate)
 					.auditDetails(auditdetails)
 					.tenantId(tenantId)
@@ -151,47 +150,64 @@ public class LandRowMapper implements ResultSetExtractor<List<LandInfo>> {
 		}
 
 		// Owner
-		String ownerId = rs.getString("landInfoowner_id");
+		String ownerId = rs.getString("owner_id");
 		if (ownerId != null) {
-			Boolean isPrimaryOwner = (Boolean) rs.getObject("is_primary_owner");
-			Boolean status = (Boolean) rs.getObject("ownerstatus");
-			BigDecimal ownerShipPercentage = rs.getBigDecimal("ownership_percentage");
-
 			OwnerInfoV2 owner = OwnerInfoV2.builder()
 					.tenantId(tenantId)
 					.ownerId(ownerId)
-					.uuid(rs.getString("landInfoowner_uuid"))
-					.isPrimaryOwner(isPrimaryOwner)
-					.ownerShipPercentage(ownerShipPercentage)
+					.uuid(rs.getString("owner_uuid"))
+					.isPrimaryOwner((Boolean) rs.getObject("is_primary_owner"))
+					.ownerShipPercentage(rs.getBigDecimal("ownership_percentage"))
 					.institutionId(rs.getString("owner_institution_id"))
+					.motherName(rs.getString("owner_mother_name"))
+					.status((Boolean) rs.getObject("owner_status"))
 					.auditDetails(auditdetails)
-					.status(status)
-					// relationship column is not present in new schema; keep null
-					.relationship(null)
 					.build();
+
+			// Owner Address
+			String ownerAddressId = rs.getString("owner_address_id");
+			if (ownerAddressId != null) {
+				Address ownerAddress = Address.builder()
+						.id(ownerAddressId)
+						.houseNo(rs.getString("owner_house_no"))
+						.addressLine1(rs.getString("owner_address_line1"))
+						.addressLine2(rs.getString("owner_address_line2"))
+						.landmark(rs.getString("owner_landmark"))
+						.district(rs.getString("owner_district"))
+						.region(rs.getString("owner_region"))
+						.state(rs.getString("owner_state"))
+						.country(rs.getString("owner_country"))
+						.pincode(rs.getString("owner_pincode"))
+						.addressType(rs.getString("owner_address_type"))
+						.tenantId(tenantId)
+						.build();
+				owner.setPermanentAddress(ownerAddress);
+			}
+
 			landInfo.addOwnerItem(owner);
 		}
 
-		// Institution (one per landInfo in your query; last seen will overwrite, as before)
-		if (rs.getString("land_inst_id") != null) {
+		// Institution
+		String instId = rs.getString("inst_id");
+		if (instId != null) {
 			Institution institution = Institution.builder()
-					.id(rs.getString("land_inst_id"))
-					.type(rs.getString("land_inst_type"))
+					.id(instId)
+					.type(rs.getString("inst_type"))
+					.designation(rs.getString("inst_designation"))
+					.nameOfAuthorizedPerson(rs.getString("inst_authorized_person"))
 					.tenantId(tenantId)
-					.designation(rs.getString("land_inst_designation"))
-					.nameOfAuthorizedPerson(rs.getString("land_inst_name_of_authorized_person"))
 					.build();
 			landInfo.setInstitution(institution);
 		}
 
 		// Document
-		String documentId = rs.getString("landInfo_doc_id");
+		String documentId = rs.getString("doc_id");
 		if (documentId != null) {
 			Document document = Document.builder()
-					.documentType(rs.getString("landInfo_doc_documenttype"))
-					.fileStoreId(rs.getString("landInfo_doc_filestore"))
 					.id(documentId)
-					.documentUid(rs.getString("landInfo_doc_uid"))
+					.documentType(rs.getString("doc_type"))
+					.fileStoreId(rs.getString("doc_filestore"))
+					.documentUid(rs.getString("doc_uid"))
 					.auditDetails(auditdetails)
 					.build();
 			landInfo.addDocumentItem(document);
