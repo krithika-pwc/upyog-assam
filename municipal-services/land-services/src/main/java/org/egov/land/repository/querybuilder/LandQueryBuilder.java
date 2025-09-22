@@ -18,28 +18,52 @@ public class LandQueryBuilder {
 	private static final String LEFT_OUTER_JOIN_STRING = " LEFT OUTER JOIN ";
 
 	private static final String QUERY = "SELECT "
-			+ "landInfo.*, landInfoaddress.*, landInfoowner.*, landInfounit.*, landInfogeolocation.*, landInstitution.*, landInfodoc.*, "
-			+ "landInfo.id as land_id, landInfo.tenant_id as landInfo_tenantId, "
-			+ "landInfo.last_modified_time as landInfo_lastModifiedTime, landInfo.created_by as landInfo_createdBy, landInfo.last_modified_by as landInfo_lastModifiedBy, "
-			+ "landInfo.created_time as landInfo_createdTime, landInfo.additional_details, "
-			+ "landInfoaddress.id as landInfo_ad_id, landInfogeolocation.id as landInfo_geo_loc, "
-			+ "landInfoowner.id as landInfoowner_id, landInfoowner.uuid as landInfoowner_uuid, landInfoowner.status as ownerstatus, landInfoowner.is_primary_owner as is_primary_owner, landInfoowner.ownership_percentage as ownership_percentage, landInfoowner.institution_id as owner_institution_id, "
-			+ "landInfo.land_unique_reg_no as land_regno, "
-			+ "landInstitution.type as land_inst_type, landInstitution.id as land_inst_id, landInstitution.designation as land_inst_designation, landInstitution.name_of_authorized_person as land_inst_name_of_authorized_person, "
-			+ "landInfounit.id as landInfo_un_id, "
-			+ "landInfodoc.id as landInfo_doc_id, landInfodoc.document_type as landInfo_doc_documenttype, landInfodoc.file_store_id as landInfo_doc_filestore, landInfodoc.document_uid as landInfo_doc_uid "
-			+ "FROM {schema}.ug_land_info landInfo" + INNER_JOIN_STRING
-			+ "{schema}.ug_land_address landInfoaddress ON landInfoaddress.land_info_id = landInfo.id" + LEFT_OUTER_JOIN_STRING
-			+ "{schema}.ug_land_institution landInstitution ON landInstitution.land_info_id = landInfo.id" + INNER_JOIN_STRING
-			+ "{schema}.ug_land_owner_info landInfoowner ON landInfoowner.land_info_id = landInfo.id AND landInfoowner.status = true " + LEFT_OUTER_JOIN_STRING
-			+ "{schema}.ug_land_unit landInfounit ON landInfounit.land_info_id = landInfo.id" + LEFT_OUTER_JOIN_STRING
-			+ "{schema}.ug_land_document landInfodoc ON landInfodoc.land_info_id = landInfo.id" + LEFT_OUTER_JOIN_STRING
-			+ "{schema}.ug_land_geolocation landInfogeolocation ON landInfogeolocation.address_id = landInfoaddress.id";
+			+ "landInfo.id AS land_id, landInfo.land_uid AS land_uid, landInfo.land_unique_reg_no AS land_regno, "
+			+ "landInfo.tenant_id AS land_tenant_id, landInfo.status AS land_status, landInfo.ownership_category AS ownership_category, "
+			+ "landInfo.source AS source, landInfo.channel AS channel, landInfo.old_dag_no AS old_dag_no, landInfo.new_dag_no AS new_dag_no, "
+			+ "landInfo.old_patta_no AS old_patta_no, landInfo.new_patta_no AS new_patta_no, landInfo.total_plot_area AS total_plot_area, "
+			+ "landInfo.created_by AS land_created_by, landInfo.last_modified_by AS land_last_modified_by, "
+			+ "landInfo.created_time AS land_created_time, landInfo.last_modified_time AS land_last_modified_time, "
+			+ "landInfo.additional_details AS land_additional_details, "
 
+			+ "landAddress.id AS land_address_id, landAddress.house_no AS house_no, landAddress.address_line_1 AS address_line_1, "
+			+ "landAddress.address_line_2 AS address_line_2, landAddress.landmark AS landmark, landAddress.locality AS locality, "
+			+ "landAddress.district AS district, landAddress.region AS region, landAddress.state AS state, "
+			+ "landAddress.country AS country, landAddress.pincode AS pincode, "
 
-	private final String paginationWrapper = "SELECT * FROM "
-			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY landInfo_lastModifiedTime DESC) offset_ FROM " + "({})"
-			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
+			+ "landGeo.id AS geo_id, landGeo.latitude AS latitude, landGeo.longitude AS longitude, "
+
+			+ "landOwner.id AS owner_id, landOwner.uuid AS owner_uuid, landOwner.is_primary_owner AS is_primary_owner, "
+			+ "landOwner.ownership_percentage AS ownership_percentage, landOwner.institution_id AS owner_institution_id, "
+			+ "landOwner.mother_name AS owner_mother_name, landOwner.status AS owner_status, "
+
+			+ "ownerAddress.id AS owner_address_id, ownerAddress.house_no AS owner_house_no, "
+			+ "ownerAddress.address_line_1 AS owner_address_line1, ownerAddress.address_line_2 AS owner_address_line2, "
+			+ "ownerAddress.landmark AS owner_landmark, ownerAddress.locality AS owner_locality, ownerAddress.district AS owner_district, "
+			+ "ownerAddress.region AS owner_region, ownerAddress.state AS owner_state, ownerAddress.country AS owner_country, "
+			+ "ownerAddress.pincode AS owner_pincode, ownerAddress.address_type AS owner_address_type, "
+
+			+ "landInst.id AS inst_id, landInst.type AS inst_type, landInst.designation AS inst_designation, "
+			+ "landInst.name_of_authorized_person AS inst_authorized_person, "
+
+			+ "landDoc.id AS doc_id, landDoc.document_type AS doc_type, landDoc.file_store_id AS doc_filestore, landDoc.document_uid AS doc_uid, "
+
+			+ "landUnit.id AS unit_id, landUnit.floor_no AS floor_no, landUnit.unit_type AS unit_type, "
+			+ "landUnit.usage_category AS usage_category, landUnit.occupancy_type AS occupancy_type, landUnit.occupancy_date AS occupancy_date "
+
+			+ "FROM {schema}.ug_land_info landInfo " + INNER_JOIN_STRING
+			+ "{schema}.ug_land_address landAddress ON landAddress.land_info_id = landInfo.id " + LEFT_OUTER_JOIN_STRING
+			+ "{schema}.ug_land_geolocation landGeo ON landGeo.address_id = landAddress.id " + INNER_JOIN_STRING
+			+ "{schema}.ug_land_owner_info landOwner ON landOwner.land_info_id = landInfo.id AND landOwner.status = true " + LEFT_OUTER_JOIN_STRING
+			+ "{schema}.ug_land_owner_address ownerAddress ON ownerAddress.owner_info_id = landOwner.id " + LEFT_OUTER_JOIN_STRING
+			+ "{schema}.ug_land_institution landInst ON landInst.land_info_id = landInfo.id " + LEFT_OUTER_JOIN_STRING
+			+ "{schema}.ug_land_document landDoc ON landDoc.land_info_id = landInfo.id " + LEFT_OUTER_JOIN_STRING
+			+ "{schema}.ug_land_unit landUnit ON landUnit.land_info_id = landInfo.id ";
+
+	private final String paginationWrapper =
+			"SELECT * FROM "
+					+ "(SELECT *, DENSE_RANK() OVER (ORDER BY land_last_modified_time DESC) offset_ FROM ({}) result) result_offset "
+					+ "WHERE offset_ > ? AND offset_ <= ?";
 
 
 	/**
@@ -79,7 +103,7 @@ public class LandQueryBuilder {
 		// User IDs (Owner UUIDs)
 		if (criteria.getUserIds() != null && !criteria.getUserIds().isEmpty()) {
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" landInfoowner.uuid IN (").append(createQuery(criteria.getUserIds())).append(") ");
+			builder.append(" landOwner.uuid IN (").append(createQuery(criteria.getUserIds())).append(") ");
 			addToPreparedStatement(preparedStmtList, criteria.getUserIds());
 		}
 
@@ -93,7 +117,7 @@ public class LandQueryBuilder {
 		// Locality filter
 		if (criteria.getLocality() != null) {
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" landInfoaddress.locality = ? ");
+			builder.append(" landAddress.locality = ? ");
 			preparedStmtList.add(criteria.getLocality());
 		}
 
@@ -152,10 +176,7 @@ public class LandQueryBuilder {
 	}
 
 	private void addToPreparedStatement(List<Object> preparedStmtList, List<String> ids) {
-		ids.forEach(id -> {
-			preparedStmtList.add(id);
-		});
-
+		ids.forEach(preparedStmtList::add);
 	}
 
 	private Object createQuery(List<String> ids) {
