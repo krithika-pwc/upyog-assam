@@ -423,19 +423,26 @@ public class BPAService {
     public BPA update(BPARequest bpaRequest) {
         RequestInfo requestInfo = bpaRequest.getRequestInfo();
         String tenantId = centralInstanceUtil.getStateLevelTenant(bpaRequest.getBPA().getTenantId());
-        Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+
+
+        //TODO : Need to remove after adding mdms data
+      //  Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+
+
         BPA bpa = bpaRequest.getBPA();
-        String businessServices = bpaRequest.getBPA().getBusinessService();
-        Map<String, String> edcrResponse = new HashMap<>();
+
+    //    String businessServices = bpaRequest.getBPA().getBusinessService();
+     //   Map<String, String> edcrResponse = new HashMap<>();
 
         if (bpa.getId() == null) {
-            throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Application Not found in the System" + bpa);
+            throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Application Not found in the System to Update");
         }
 
-        edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
+     //   edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 
-        String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
-        log.debug("applicationType is " + applicationType);
+     //   String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
+     //   log.debug("applicationType is " + applicationType);
+
         BusinessService businessService = workflowService.getBusinessService(bpa, bpaRequest.getRequestInfo(),
                 bpa.getApplicationNo());
 
@@ -445,37 +452,40 @@ public class BPAService {
         }
 
 
-        Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map<String, String>) bpa.getAdditionalDetails()
-                : new HashMap<String, String>();
+      //  Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map<String, String>) bpa.getAdditionalDetails()
+     //           : new HashMap<String, String>();
 
-        if (bpa.getStatus().equalsIgnoreCase(BPAConstants.FI_STATUS)
-                && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
-            if (additionalDetails.get(BPAConstants.FI_ADDITIONALDETAILS) != null)
-                additionalDetails.remove(BPAConstants.FI_ADDITIONALDETAILS);
-        }
+    //    if (bpa.getStatus().equalsIgnoreCase(BPAConstants.FI_STATUS)
+      //          && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
+        //    if (additionalDetails.get(BPAConstants.FI_ADDITIONALDETAILS) != null)
+          //      additionalDetails.remove(BPAConstants.FI_ADDITIONALDETAILS);
+       // }
+    //TODO: check if required as we dont have oc to manage in this current scope of work
 
-        this.processOcUpdate(applicationType, edcrResponse.get(BPAConstants.PERMIT_NO), bpaRequest, requestInfo, additionalDetails);
+    //    this.processOcUpdate(applicationType, edcrResponse.get(BPAConstants.PERMIT_NO), bpaRequest, requestInfo, additionalDetails);
 
         bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
+//TODO: check if required as we dont have noc to manage in this current scope of work
+      //  nocService.manageOfflineNocs(bpaRequest, mdmsData);
+        //Validate payments and noc
+       // bpaValidator.validatePreEnrichData(bpaRequest, mdmsData);
 
-        nocService.manageOfflineNocs(bpaRequest, mdmsData);
-        bpaValidator.validatePreEnrichData(bpaRequest, mdmsData);
         enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 
-        this.handleRejectSendBackActions(applicationType, bpaRequest, businessService, searchResult, mdmsData, edcrResponse);
-        String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
-        String businessSrvc = businessService.getBusinessService();
+       // this.handleRejectSendBackActions(applicationType, bpaRequest, businessService, searchResult, mdmsData, edcrResponse);
+    //    String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
+     //   String businessSrvc = businessService.getBusinessService();
 
         /*
          * Before approving the application we need to check sanction fee is applicable
          * or not for that purpose on PENDING_APPROVAL_STATE the demand is generating.
          */
         // Generate the sanction Demand
-        if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
+       /* if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
                 || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
                 && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE)) {
             calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-        }
+        }*/
 
 
         /*
@@ -484,18 +494,21 @@ public class BPAService {
          * then we need to skip the payment on APPROVE and need to make it APPROVED instead
          * of SANCTION FEE PAYMENT PEDNING.
          */
-        if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
+       /* if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
                 || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
                 && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE) &&
                 bpa.getWorkflow() != null && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_APPROVE)
                 && util.getDemandAmount(bpaRequest).compareTo(BigDecimal.ZERO) <= 0) {
             Workflow workflow = Workflow.builder().action(BPAConstants.ACTION_SKIP_PAY).build();
             bpa.setWorkflow(workflow);
-        }
+        }*/
 
         wfIntegrator.callWorkFlow(bpaRequest);
-        log.debug("===> workflow done =>" + bpaRequest.getBPA().getStatus());
-        enrichmentService.postStatusEnrichment(bpaRequest);
+        log.info("===> workflow done =>" + bpaRequest.getBPA().getStatus());
+
+        //TODO: uncomment this if it is required in future
+        //Generate approval no if it is in approved state
+      //  enrichmentService.postStatusEnrichment(bpaRequest);
 
         log.debug("Bpa status is : " + bpa.getStatus());
 
@@ -506,7 +519,7 @@ public class BPAService {
          */
 
 
-        repository.update(bpaRequest, workflowService.isStateUpdatable(bpa.getStatus(), businessService));
+        repository.update(bpaRequest);
         return bpaRequest.getBPA();
 
     }
@@ -528,7 +541,7 @@ public class BPAService {
 
             if (bpa.getWorkflow().getComments() == null || bpa.getWorkflow().getComments().isEmpty()) {
                 throw new CustomException(BPAErrorConstants.BPA_UPDATE_ERROR_COMMENT_REQUIRED,
-                        "Comment is mandaotory, please provide the comments ");
+                        "Comment is mandatory, please provide the comments ");
             }
             nocService.handleBPARejectedStateForNoc(bpaRequest);
 

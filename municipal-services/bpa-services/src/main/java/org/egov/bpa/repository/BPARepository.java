@@ -54,27 +54,10 @@ public class BPARepository {
 	/**
 	 * pushes the request on update or workflow update topic through kafaka based on th isStateUpdatable 
 	 * @param bpaRequest
-	 * @param isStateUpdatable
 	 */
-	public void update(BPARequest bpaRequest, boolean isStateUpdatable) {
-		RequestInfo requestInfo = bpaRequest.getRequestInfo();
+	public void update(BPARequest bpaRequest) {
 
-		BPA bpaForStatusUpdate = null;
-		BPA bpaForUpdate = null;
-
-		BPA bpa = bpaRequest.getBPA();
-
-		if (isStateUpdatable) {
-			bpaForUpdate = bpa;
-		} else {
-			bpaForStatusUpdate = bpa;
-		}
-		if (bpaForUpdate != null)
-			producer.push(bpaRequest.getBPA().getTenantId(),config.getUpdateTopic(), new BPARequest(requestInfo, bpaForUpdate));
-
-		if (bpaForStatusUpdate != null)
-			producer.push(bpaRequest.getBPA().getTenantId(),config.getUpdateWorkflowTopic(), new BPARequest(requestInfo, bpaForStatusUpdate));
-
+		producer.push(bpaRequest.getBPA().getTenantId(),config.getUpdateTopic(), bpaRequest);
 	}
 
 	/**

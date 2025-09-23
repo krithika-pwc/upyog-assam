@@ -109,10 +109,53 @@ serviceMaps:
             - jsonPath: $.BPA.auditDetails.lastModifiedTime
 
     - version: 1.0
+      description: Updates RTP details of application and maintains audit trail
+      fromTopic: update-bpa-rtp-detail
+      isTransaction: true
+      queryMaps:
+        # Audit RTP details (before update)
+        - query: >
+            INSERT INTO public.ug_bpa_rtp_detail_audit 
+            SELECT * FROM public.ug_bpa_rtp_detail WHERE buildingplan_id = ?;
+          basePath: BPA
+          jsonMaps:
+            - jsonPath: $.BPA.id
+
+        - query: > 
+            UPDATE public.ug_bpa_rtp_detail
+            SET rtp_category = ?, rtp_id = ?, rtp_name = ?, assignment_status = ?,
+                assignment_date = ?, changed_date = ?, remarks = ?, 
+                last_modified_by = ?, last_modified_time = ?, additional_details = ?::JSONB
+            WHERE buildingplan_id = ?;
+          basePath: BPA.rtpDetails
+          jsonMaps:
+            - jsonPath: $.BPA.rtpDetails.rtpCategory
+            - jsonPath: $.BPA.rtpDetails.rtpUUID
+            - jsonPath: $.BPA.rtpDetails.rtpName
+            - jsonPath: $.BPA.rtpDetails.assignmentStatus
+            - jsonPath: $.BPA.rtpDetails.assignmentDate
+            - jsonPath: $.BPA.rtpDetails.changedDate
+            - jsonPath: $.BPA.rtpDetails.remarks
+            - jsonPath: $.BPA.auditDetails.lastModifiedBy
+            - jsonPath: $.BPA.auditDetails.lastModifiedTime
+            - jsonPath: $.BPA.rtpDetails.additionalDetails
+              type: JSON
+              dbType: JSONB
+            - jsonPath: $.BPA.id  # WHERE condition (buildingplan_id)
+
+
+    - version: 1.0
       description: Updates BPA application and maintains audit trail
       fromTopic: update-bpa-buildingplan
       isTransaction: true
       queryMaps:
+        # Audit main building plan data (before update)
+        - query: >
+            INSERT INTO public.ug_bpa_buildingplans_audit 
+            SELECT * FROM public.ug_bpa_buildingplans WHERE id = ?;
+          basePath: BPA
+          jsonMaps:
+            - jsonPath: $.BPA.id
 
         - query: >
             UPDATE public.ug_bpa_buildingplans
@@ -132,17 +175,133 @@ serviceMaps:
               dbType: JSONB
             - jsonPath: $.BPA.id
 
-        - query: INSERT INTO public.ug_bpa_buildingplans_audit SELECT * FROM ug_bpa_buildingplans WHERE id = ?;
+    - version: 1.0
+      description: Updates ALL tables with audit trail maintenance
+      fromTopic: update-all-bpa-buildingplan
+      isTransaction: true
+      queryMaps:
+
+        # STEP 1: Insert current data into audit tables BEFORE updating
+
+        # Audit main building plan data (before update)
+        - query: >
+            INSERT INTO public.ug_bpa_buildingplans_audit 
+            SELECT * FROM public.ug_bpa_buildingplans WHERE id = ?;
           basePath: BPA
           jsonMaps:
             - jsonPath: $.BPA.id
 
-        - query: INSERT INTO public.ug_bpa_documents_audit SELECT * FROM ug_bpa_documents WHERE id = ?;
+        # Audit Area Mapping details (before update)
+        - query: >
+            INSERT INTO public.ug_bpa_area_mapping_detail_audit 
+            SELECT * FROM public.ug_bpa_area_mapping_detail WHERE buildingplan_id = ?;
+          basePath: BPA
+          jsonMaps:
+            - jsonPath: $.BPA.id
+
+        # Audit Documents (before delete)
+        - query: >
+            INSERT INTO public.ug_bpa_documents_audit 
+            SELECT * FROM public.ug_bpa_documents WHERE buildingplan_id = ?;
+          basePath: BPA
+          jsonMaps:
+            - jsonPath: $.BPA.id
+
+        # STEP 2: Now perform the actual updates/operations
+
+        # UPDATE main building plan table (all fields except id, created_*)
+        - query: >
+            UPDATE public.ug_bpa_buildingplans
+            SET 
+              application_no = ?, 
+              tenant_id = ?, 
+              edcr_number = ?, 
+              status = ?, 
+              application_date = ?, 
+              approval_no = ?, 
+              approval_date = ?, 
+              business_service = ?, 
+              account_id = ?, 
+              application_type = ?, 
+              risk_type = ?, 
+              land_id = ?, 
+              last_modified_by = ?, 
+              last_modified_time = ?, 
+              additional_details = ?::JSONB
+            WHERE id = ?;
+          basePath: BPA
+          jsonMaps:
+            - jsonPath: $.BPA.applicationNo
+            - jsonPath: $.BPA.tenantId
+            - jsonPath: $.BPA.edcrNumber
+            - jsonPath: $.BPA.status
+            - jsonPath: $.BPA.applicationDate
+            - jsonPath: $.BPA.approvalNo
+            - jsonPath: $.BPA.approvalDate
+            - jsonPath: $.BPA.businessService
+            - jsonPath: $.BPA.accountId
+            - jsonPath: $.BPA.applicationType
+            - jsonPath: $.BPA.riskType
+            - jsonPath: $.BPA.landId
+            - jsonPath: $.BPA.auditDetails.lastModifiedBy
+            - jsonPath: $.BPA.auditDetails.lastModifiedTime
+            - jsonPath: $.BPA.additionalDetails
+              type: JSON
+              dbType: JSONB
+            - jsonPath: $.BPA.id  # WHERE condition
+
+        # UPDATE Area Mapping table (using UPDATE command)
+        - query: >
+            UPDATE public.ug_bpa_area_mapping_detail
+            SET 
+              district = ?, 
+              planning_area = ?, 
+              planning_permit_authority = ?::planning_permit_authority_enum, 
+              building_permit_authority = ?::building_permit_authority_enum, 
+              revenue_village = ?, 
+              mouza = ?, 
+              ward = ?, 
+              last_modified_by = ?, 
+              last_modified_time = ?
+            WHERE buildingplan_id = ?;
+          basePath: BPA.areaMapping
+          jsonMaps:
+            - jsonPath: $.BPA.areaMapping.district
+            - jsonPath: $.BPA.areaMapping.planningArea
+            - jsonPath: $.BPA.areaMapping.planningPermitAuthority
+            - jsonPath: $.BPA.areaMapping.buildingPermitAuthority
+            - jsonPath: $.BPA.areaMapping.revenueVillage
+            - jsonPath: $.BPA.areaMapping.mouza
+            - jsonPath: $.BPA.areaMapping.ward
+            - jsonPath: $.BPA.auditDetails.lastModifiedBy
+            - jsonPath: $.BPA.auditDetails.lastModifiedTime
+            - jsonPath: $.BPA.id  # WHERE condition (buildingplan_id)
+
+        # DELETE existing documents (only table using DELETE+INSERT)
+        - query: >
+            DELETE FROM public.ug_bpa_documents 
+            WHERE buildingplan_id = ?;
+          basePath: BPA
+          jsonMaps:
+            - jsonPath: $.BPA.id
+
+        # INSERT documents (only table using DELETE+INSERT)
+        - query: >
+            INSERT INTO public.ug_bpa_documents
+            (id, document_type, filestore_id, document_uid, buildingplan_id,
+             created_by, created_time, last_modified_by, last_modified_time, additional_details)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB);
           basePath: BPA.documents.*
           jsonMaps:
             - jsonPath: $.BPA.documents.*.id
-
-        - query: INSERT INTO public.ug_bpa_rtp_detail_audit SELECT * FROM public.ug_bpa_rtp_detail WHERE id = ?;
-          basePath: BPA.rtpDetails
-          jsonMaps:
-            - jsonPath: $.BPA.rtpDetails.id
+            - jsonPath: $.BPA.documents.*.documentType
+            - jsonPath: $.BPA.documents.*.fileStoreId
+            - jsonPath: $.BPA.documents.*.documentUid
+            - jsonPath: $.BPA.id
+            - jsonPath: $.BPA.documents.*.auditDetails.createdBy
+            - jsonPath: $.BPA.documents.*.auditDetails.createdTime
+            - jsonPath: $.BPA.auditDetails.lastModifiedBy
+            - jsonPath: $.BPA.auditDetails.lastModifiedTime
+            - jsonPath: $.BPA.documents.*.additionalDetails
+              type: JSON
+              dbType: JSONB
