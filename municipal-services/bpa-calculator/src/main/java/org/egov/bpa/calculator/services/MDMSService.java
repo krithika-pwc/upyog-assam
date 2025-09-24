@@ -7,11 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.egov.bpa.calculator.config.BPACalculatorConfig;
 import org.egov.bpa.calculator.repository.PreapprovedPlanRepository;
 import org.egov.bpa.calculator.repository.ServiceRequestRepository;
 import org.egov.bpa.calculator.utils.BPACalculatorConstants;
 import org.egov.bpa.calculator.web.models.CalculationReq;
+import org.egov.bpa.calculator.web.models.CalulationCriteria;
 import org.egov.bpa.calculator.web.models.PreapprovedPlan;
 import org.egov.bpa.calculator.web.models.PreapprovedPlanSearchCriteria;
 import org.egov.bpa.calculator.web.models.bpa.BPA;
@@ -25,7 +27,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
@@ -142,7 +143,7 @@ public class MDMSService {
     			serviceType.add("NEW_CONSTRUCTION");
     		}
     		applicationType = context.read("edcrDetail.*.appliactionType");
-    		if (StringUtils.isEmpty(applicationType)) {
+    		if (org.springframework.util.StringUtils.isEmpty(applicationType)) {
     			applicationType.add("permit");
     		}
     		additionalDetails.put("serviceType", serviceType.get(0).toString());
@@ -205,6 +206,63 @@ public class MDMSService {
 					"No preapproved plan with provided drawingNo");
 		}
 		return preapprovedPlans.get(0);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Map getCalculationType(RequestInfo requestInfo, BPA bpa, Object mdmsData,
+			CalulationCriteria calulationCriteria) {
+
+		HashMap<String, Object> calculationType = new HashMap<>();
+		String feeType = calulationCriteria.getFeeType();
+		String applicationType = calulationCriteria.getApplicationType();
+		String wallType = calulationCriteria.getWallType();
+		String floorLevel = calulationCriteria.getFloorLevel();
+
+		System.out.println("feeType=" + feeType + ", applicationType=" + applicationType + ", wallType=" + wallType
+				+ ", floorLevel=" + floorLevel);
+
+		try {
+			// Fetch whole calculationType JSON from MDMS
+			List jsonOutput = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_CALCULATIONTYPE_PATH);
+
+			// 1. Filter by feeType
+			String filterExp = "$.[?(@.feeType == '" + feeType + "')]";
+			List<Object> calTypes = JsonPath.read(jsonOutput, filterExp);
+
+			// 2. Filter by applicationType 
+			filterExp = "$.[?(@.applicationType == '" + applicationType + "' || @.applicationType == 'ALL')]";
+			calTypes = JsonPath.read(calTypes, filterExp);
+
+			// 3. Filter by wallType/floorLevel 
+			if (StringUtils.isNotBlank(wallType)) {
+
+				filterExp = "$.[?(@.wallType == '" + wallType + "' || @.wallType == 'ALL')]";
+				calTypes = JsonPath.read(calTypes, filterExp);
+
+			} else if (StringUtils.isNotBlank(floorLevel)) {
+
+				filterExp = "$.[?(@.floorLevel == '" + floorLevel + "' || @.floorLevel == 'ALL')]";
+				calTypes = JsonPath.read(calTypes, filterExp);
+			}
+
+			if (calTypes.isEmpty()) {
+				return defaultMap(feeType);
+			}
+
+			calculationType = (HashMap<String, Object>) calTypes.get(0);
+
+			// Normalize unitType, rate, additionalFee
+			calculationType.put("unitType", calculationType.getOrDefault("unitType", "FIXED"));
+			calculationType.put("rate", calculationType.getOrDefault("rate", "0"));
+			calculationType.put("additionalFee", calculationType.getOrDefault("additionalFee", "0"));
+
+		} catch (Exception e) {
+			throw new CustomException(BPACalculatorConstants.CALCULATION_ERROR,
+					"Failed to get calculationType for feeType: " + feeType + e.getLocalizedMessage() + e.getMessage());
+		}
+
+		System.out.println("Calculation Type Used : "+calculationType);
+		return calculationType;
 	}
 
 }

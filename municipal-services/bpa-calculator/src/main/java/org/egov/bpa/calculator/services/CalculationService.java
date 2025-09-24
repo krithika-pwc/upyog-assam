@@ -2,13 +2,12 @@ package org.egov.bpa.calculator.services;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.egov.bpa.calculator.config.BPACalculatorConfig;
 import org.egov.bpa.calculator.kafka.broker.BPACalculatorProducer;
 import org.egov.bpa.calculator.repository.PreapprovedPlanRepository;
@@ -19,8 +18,6 @@ import org.egov.bpa.calculator.web.models.Calculation;
 import org.egov.bpa.calculator.web.models.CalculationReq;
 import org.egov.bpa.calculator.web.models.CalculationRes;
 import org.egov.bpa.calculator.web.models.CalulationCriteria;
-import org.egov.bpa.calculator.web.models.PreapprovedPlan;
-import org.egov.bpa.calculator.web.models.PreapprovedPlanSearchCriteria;
 import org.egov.bpa.calculator.web.models.bpa.BPA;
 import org.egov.bpa.calculator.web.models.bpa.EstimatesAndSlabs;
 import org.egov.bpa.calculator.web.models.demand.Category;
@@ -93,7 +90,7 @@ public class CalculationService {
 		String tenantId = calculationReq.getCalulationCriteria().get(0)
 				.getTenantId();
 		Object mdmsData = mdmsService.mDMSCall(calculationReq, tenantId);
-		List<Calculation> calculations = getCalculation(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
+		List<Calculation> calculations = calculateFee(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
 		return calculations;
 	}
 
@@ -274,5 +271,96 @@ public class CalculationService {
 		estimatesAndSlabs.setEstimates(estimates);
 		return estimatesAndSlabs;
 	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private EstimatesAndSlabs fetchBaseRates(CalulationCriteria calulationCriteria, RequestInfo requestInfo,
+			Object mdmsData) {
+
+		BPA bpa = calulationCriteria.getBpa();
+		EstimatesAndSlabs estimatesAndSlabs = new EstimatesAndSlabs();
+		ArrayList<TaxHeadEstimate> estimates = new ArrayList<>();
+
+		Map calculationTypeMap = mdmsService.getCalculationType(requestInfo, bpa, mdmsData, calulationCriteria);
+
+		BigDecimal totalTax = calculateEstimate(bpa, calculationTypeMap);
+
+		if (totalTax.compareTo(BigDecimal.ZERO) < 0)
+			throw new CustomException(BPACalculatorConstants.INVALID_AMOUNT, "Tax amount is negative");
+
+		TaxHeadEstimate estimate = new TaxHeadEstimate();
+		estimate.setEstimateAmount(totalTax);
+		estimate.setCategory(Category.FEE);
+
+		String taxHeadCode = utils.getTaxHeadCode(bpa.getBusinessService(), calulationCriteria.getFeeType());
+		estimate.setTaxHeadCode(taxHeadCode);
+
+		estimates.add(estimate);
+		estimatesAndSlabs.setEstimates(estimates);
+
+		return estimatesAndSlabs;
+	}
+
+	private BigDecimal calculateEstimate(BPA bpa, Map<String, Object> calcType) {
+
+		String unitType = (String) calcType.get("unitType");
+		System.out.println("calcType"+calcType);
+		System.out.println("unitType"+unitType);
+		System.out.println(calcType.get("rate"));
+		BigDecimal rate = new BigDecimal(calcType.get("rate").toString());
+		BigDecimal additionalFee = new BigDecimal(StringUtils.isEmpty((String) calcType.get("additionalFee")) ? "0"
+				: (String) calcType.get("additionalFee"));
+
+		BigDecimal amount = BigDecimal.ZERO;
+
+		switch (unitType.toLowerCase()) {
+		case "per sq. m":
+			amount = bpa.getTotalBuiltUpArea().multiply(rate);
+			break;
+
+		case "percentage":
+			amount = bpa.getConstructionCost().multiply(rate).divide(BigDecimal.valueOf(100));
+			break;
+
+		case "fixed":
+		default:
+			amount = rate;
+			break;
+		}
+
+		return amount.add(additionalFee);
+	}
+
+	public List<Calculation> calculateFee(RequestInfo requestInfo, List<CalulationCriteria> criterias,
+			Object mdmsData) {
+
+		List<Calculation> calculations = new LinkedList<>();
+
+		for (CalulationCriteria criteria : criterias) {
+
+			EstimatesAndSlabs estimatesAndSlabs = fetchRates(criteria, requestInfo, mdmsData);
+			List<TaxHeadEstimate> taxHeadEstimates = estimatesAndSlabs.getEstimates();
+
+			Calculation calculation = new Calculation();
+			calculation.setBpa(criteria.getBpa());
+			calculation.setTenantId(criteria.getTenantId());
+			calculation.setTaxHeadEstimates(taxHeadEstimates);
+			calculation.setFeeType(criteria.getFeeType());
+			calculations.add(calculation);
+		}
+		
+		return calculations;
+	}
+
+	private EstimatesAndSlabs fetchRates(CalulationCriteria calulationCriteria, RequestInfo requestInfo,
+			Object mdmsData) {
+		
+		List<TaxHeadEstimate> estimates = new LinkedList<>();
+		EstimatesAndSlabs estimatesAndSlabs = fetchBaseRates(calulationCriteria, requestInfo, mdmsData);
+		estimates.addAll(estimatesAndSlabs.getEstimates());
+		estimatesAndSlabs.setEstimates(estimates);
+
+		return estimatesAndSlabs;
+	}
+
 
 }
