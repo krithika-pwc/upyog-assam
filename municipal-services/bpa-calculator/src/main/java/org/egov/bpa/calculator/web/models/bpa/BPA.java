@@ -1,5 +1,6 @@
 package org.egov.bpa.calculator.web.models.bpa;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +35,12 @@ import lombok.NoArgsConstructor;
 public class BPA   {
   @JsonProperty("id")
   private String id = null;
+
+	@JsonProperty("totalBuiltUpArea")
+	private BigDecimal totalBuiltUpArea = null;
+
+	@JsonProperty("constructionCost")
+	private BigDecimal constructionCost = null;
 
   @JsonProperty("applicationNo")
   private String applicationNo = null;
@@ -424,6 +431,22 @@ public class BPA   {
   public void setAdditionalDetails(Object additionalDetails) {
     this.additionalDetails = additionalDetails;
   }
+
+	public BigDecimal getConstructionCost() {
+		return constructionCost;
+	}
+
+	public BigDecimal getTotalBuiltUpArea() {
+		return totalBuiltUpArea;
+	}
+
+	public void setConstructionCost(BigDecimal constructionCost) {
+		this.constructionCost = constructionCost;
+	}
+
+	public void setTotalBuiltUpArea(BigDecimal totalBuiltUpArea) {
+		this.totalBuiltUpArea = totalBuiltUpArea;
+	}
 
 
   @Override
