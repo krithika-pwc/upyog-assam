@@ -250,3 +250,47 @@ CREATE TABLE IF NOT EXISTS ug_bpa_area_mapping_detail (
             ON UPDATE NO ACTION
             ON DELETE NO ACTION
 );
+
+CREATE TABLE IF NOT EXISTS ug_bpa_area_mapping_detail_audit (
+    id                        VARCHAR(64) ,
+    buildingplan_id           VARCHAR(64) NOT NULL,
+    district                  VARCHAR(128),
+    planning_area             VARCHAR(128),
+    planning_permit_authority planning_permit_authority_enum NOT NULL,
+    building_permit_authority building_permit_authority_enum NOT NULL,
+    revenue_village           VARCHAR(128),
+    mouza                     VARCHAR(128),
+    ward                      VARCHAR(128),
+
+    /** Audit Fields */
+    created_by          VARCHAR(64),
+    last_modified_by    VARCHAR(64),
+    created_time        BIGINT, -- assignment_date
+    last_modified_time  BIGINT
+);
+
+CREATE TABLE IF NOT EXISTS ug_bpa_documents_audit (
+    /** Unique Identifier(UUID) for the document. */
+    id VARCHAR(64),
+
+    /** Type of the document (ownership proof, NOC, etc.). */
+    document_type VARCHAR(64),
+
+    /** Filestore reference ID. */
+    filestore_id VARCHAR(64),
+
+    /** Unique document identifier. */
+    document_uid VARCHAR(64),
+
+    /** Foreign key reference to the building plan. */
+    buildingplan_id VARCHAR(64),
+
+    /** Audit Fields */
+    created_by VARCHAR(64),
+    last_modified_by VARCHAR(64),
+    created_time BIGINT,
+    last_modified_time BIGINT,
+
+    /** Additional details JSON for extensibility */
+    additional_details JSONB
+);

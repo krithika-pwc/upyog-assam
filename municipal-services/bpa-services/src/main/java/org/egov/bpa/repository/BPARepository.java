@@ -5,6 +5,7 @@ import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.producer.Producer;
 import org.egov.bpa.repository.querybuilder.BPAQueryBuilder;
 import org.egov.bpa.repository.rowmapper.BPARowMapper;
+import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
@@ -55,9 +56,18 @@ public class BPARepository {
 	 * pushes the request on update or workflow update topic through kafaka based on th isStateUpdatable 
 	 * @param bpaRequest
 	 */
-	public void update(BPARequest bpaRequest) {
-
-		producer.push(bpaRequest.getBPA().getTenantId(),config.getUpdateTopic(), bpaRequest);
+	public void update(BPARequest bpaRequest, String type) {
+		switch (type) {
+			case BPAConstants.RTP_UPDATE:
+				producer.push(bpaRequest.getBPA().getTenantId(), config.getUpdateRTPDetailsTopic(), bpaRequest);
+				break;
+			case BPAConstants.UPDATE_ALL_BUILDING_PLAN:
+				producer.push(bpaRequest.getBPA().getTenantId(), config.getUpdateAllBuildingPlanTopic(), bpaRequest);
+				break;
+			default:
+				producer.push(bpaRequest.getBPA().getTenantId(), config.getUpdateTopic(), bpaRequest);
+				break;
+		}
 	}
 
 	/**

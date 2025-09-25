@@ -69,6 +69,12 @@ public class BPAConfiguration {
 	@Value("${persister.update.buildingplan.topic}")
 	private String updateTopic;
 
+	@Value("${persister.update.rtpdetails.topic}")
+	private String updateRTPDetailsTopic;
+
+	@Value("${persister.update.allbuildingplan.topic}")
+	private String updateAllBuildingPlanTopic;
+
 	@Value("${persister.update.buildingplan.workflow.topic}")
 	private String updateWorkflowTopic;
 

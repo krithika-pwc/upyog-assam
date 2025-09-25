@@ -42,7 +42,9 @@ public class BPAQueryBuilder {
                     "       bpadoc.document_type AS bpa_doc_document_type, " +
                     "       bpadoc.filestore_id AS bpa_doc_filestore, " +
 
-                    "       rtp.id AS rtp_id, " +
+                    "       rtp.id AS id, " +
+                    "       rtp.buildingplan_id AS buildingplan_id, " +
+                    "       rtp.rtp_id AS rtp_id, " +
                     "       rtp.rtp_category AS rtp_category, " +
                     "       rtp.rtp_name AS rtp_name, " +
                     "       rtp.assignment_status AS rtp_assignment_status, " +
