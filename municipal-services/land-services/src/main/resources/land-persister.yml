@@ -249,3 +249,316 @@ serviceMaps:
           basePath: landInfo.documents.*
           jsonMaps:
             - jsonPath: $.landInfo.documents.*.id
+
+    # -------------------------------
+    # UPDATE FLOW (Upsert with ON CONFLICT)
+    # -------------------------------
+    - version: 1.0
+      description: Upserts LandInfo and related details (update flow)
+      fromTopic: update-landinfo
+      isTransaction: true
+      queryMaps:
+        # Upsert LandInfo
+        - query: >
+            INSERT INTO ug_land_info (
+              id, land_uid, land_unique_reg_no, tenant_id, status, ownership_category,
+              source, channel, old_dag_no, new_dag_no, old_patta_no, new_patta_no, 
+              total_plot_area, created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              land_uid = EXCLUDED.land_uid,
+              land_unique_reg_no = EXCLUDED.land_unique_reg_no,
+              tenant_id = EXCLUDED.tenant_id,
+              status = EXCLUDED.status,
+              ownership_category = EXCLUDED.ownership_category,
+              source = EXCLUDED.source,
+              channel = EXCLUDED.channel,
+              old_dag_no = EXCLUDED.old_dag_no,
+              new_dag_no = EXCLUDED.new_dag_no,
+              old_patta_no = EXCLUDED.old_patta_no,
+              new_patta_no = EXCLUDED.new_patta_no,
+              total_plot_area = EXCLUDED.total_plot_area,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo
+          jsonMaps:
+            - jsonPath: $.landInfo.id
+            - jsonPath: $.landInfo.landUId
+            - jsonPath: $.landInfo.landUniqueRegNo
+            - jsonPath: $.landInfo.tenantId
+            - jsonPath: $.landInfo.status
+            - jsonPath: $.landInfo.ownershipCategory
+            - jsonPath: $.landInfo.source
+            - jsonPath: $.landInfo.channel
+            - jsonPath: $.landInfo.oldDagNumber
+            - jsonPath: $.landInfo.newDagNumber
+            - jsonPath: $.landInfo.oldPattaNumber
+            - jsonPath: $.landInfo.newPattaNumber
+            - jsonPath: $.landInfo.totalPlotArea
+              type: DOUBLE
+              dbType: DOUBLE
+            - jsonPath: $.landInfo.auditDetails.createdBy
+            - jsonPath: $.landInfo.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.auditDetails.createdTime
+            - jsonPath: $.landInfo.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Owner Info
+        - query: >
+            INSERT INTO ug_land_owner_info (
+              id, uuid, is_primary_owner, ownership_percentage, institution_id, land_info_id,
+              mother_name, status, created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              uuid = EXCLUDED.uuid,
+              is_primary_owner = EXCLUDED.is_primary_owner,
+              ownership_percentage = EXCLUDED.ownership_percentage,
+              institution_id = EXCLUDED.institution_id,
+              land_info_id = EXCLUDED.land_info_id,
+              mother_name = EXCLUDED.mother_name,
+              status = EXCLUDED.status,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.owners.*
+          jsonMaps:
+            - jsonPath: $.landInfo.owners.*.ownerId
+            - jsonPath: $.landInfo.owners.*.uuid
+            - jsonPath: $.landInfo.owners.*.isPrimaryOwner
+            - jsonPath: $.landInfo.owners.*.ownerShipPercentage
+              type: DOUBLE
+              dbType: DOUBLE
+            - jsonPath: $.landInfo.owners.*.institutionId
+            - jsonPath: $.landInfo.id
+            - jsonPath: $.landInfo.owners.*.motherName
+            - jsonPath: $.landInfo.owners.*.status
+            - jsonPath: $.landInfo.owners.*.auditDetails.createdBy
+            - jsonPath: $.landInfo.owners.*.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.owners.*.auditDetails.createdTime
+            - jsonPath: $.landInfo.owners.*.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.owners.*.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Address
+        - query: >
+            INSERT INTO ug_land_address (
+              id, land_info_id, tenant_id, house_no, address_line_1, address_line_2, landmark, locality,
+              district, region, state, country, pincode,
+              created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              land_info_id = EXCLUDED.land_info_id,
+              tenant_id = EXCLUDED.tenant_id,
+              house_no = EXCLUDED.house_no,
+              address_line_1 = EXCLUDED.address_line_1,
+              address_line_2 = EXCLUDED.address_line_2,
+              landmark = EXCLUDED.landmark,
+              locality = EXCLUDED.locality,
+              district = EXCLUDED.district,
+              region = EXCLUDED.region,
+              state = EXCLUDED.state,
+              country = EXCLUDED.country,
+              pincode = EXCLUDED.pincode,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.address
+          jsonMaps:
+            - jsonPath: $.landInfo.address.id
+            - jsonPath: $.landInfo.id
+            - jsonPath: $.landInfo.address.tenantId
+            - jsonPath: $.landInfo.address.houseNo
+            - jsonPath: $.landInfo.address.addressLine1
+            - jsonPath: $.landInfo.address.addressLine2
+            - jsonPath: $.landInfo.address.landmark
+            - jsonPath: $.landInfo.address.localityCode
+            - jsonPath: $.landInfo.address.district
+            - jsonPath: $.landInfo.address.region
+            - jsonPath: $.landInfo.address.state
+            - jsonPath: $.landInfo.address.country
+            - jsonPath: $.landInfo.address.pincode
+            - jsonPath: $.landInfo.address.auditDetails.createdBy
+            - jsonPath: $.landInfo.address.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.address.auditDetails.createdTime
+            - jsonPath: $.landInfo.address.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.address.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Geolocation
+        - query: >
+            INSERT INTO ug_land_geolocation (
+              id, latitude, longitude, address_id, created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              latitude = EXCLUDED.latitude,
+              longitude = EXCLUDED.longitude,
+              address_id = EXCLUDED.address_id,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.address.geoLocation
+          jsonMaps:
+            - jsonPath: $.landInfo.address.geoLocation.id
+            - jsonPath: $.landInfo.address.geoLocation.latitude
+              type: DOUBLE
+              dbType: DOUBLE
+            - jsonPath: $.landInfo.address.geoLocation.longitude
+              type: DOUBLE
+              dbType: DOUBLE
+            - jsonPath: $.landInfo.address.id
+            - jsonPath: $.landInfo.address.auditDetails.createdBy
+            - jsonPath: $.landInfo.address.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.address.auditDetails.createdTime
+            - jsonPath: $.landInfo.address.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.address.geoLocation.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Owner Address
+        - query: >
+            INSERT INTO ug_land_owner_address (
+              id, owner_info_id, tenant_id, house_no, address_line_1, address_line_2, landmark, locality,
+              district, region, state, country, pincode, address_type,
+              created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              owner_info_id = EXCLUDED.owner_info_id,
+              tenant_id = EXCLUDED.tenant_id,
+              house_no = EXCLUDED.house_no,
+              address_line_1 = EXCLUDED.address_line_1,
+              address_line_2 = EXCLUDED.address_line_2,
+              landmark = EXCLUDED.landmark,
+              locality = EXCLUDED.locality,
+              district = EXCLUDED.district,
+              region = EXCLUDED.region,
+              state = EXCLUDED.state,
+              country = EXCLUDED.country,
+              pincode = EXCLUDED.pincode,
+              address_type = EXCLUDED.address_type,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.ownerAddresses.*
+          jsonMaps:
+            - jsonPath: $.landInfo.ownerAddresses.*.id
+            - jsonPath: $.landInfo.ownerAddresses.*.ownerInfoId
+            - jsonPath: $.landInfo.ownerAddresses.*.tenantId
+            - jsonPath: $.landInfo.ownerAddresses.*.houseNo
+            - jsonPath: $.landInfo.ownerAddresses.*.addressLine1
+            - jsonPath: $.landInfo.ownerAddresses.*.addressLine2
+            - jsonPath: $.landInfo.ownerAddresses.*.landmark
+            - jsonPath: $.landInfo.ownerAddresses.*.localityCode
+            - jsonPath: $.landInfo.ownerAddresses.*.district
+            - jsonPath: $.landInfo.ownerAddresses.*.region
+            - jsonPath: $.landInfo.ownerAddresses.*.state
+            - jsonPath: $.landInfo.ownerAddresses.*.country
+            - jsonPath: $.landInfo.ownerAddresses.*.pincode
+            - jsonPath: $.landInfo.ownerAddresses.*.addressType
+            - jsonPath: $.landInfo.ownerAddresses.*.auditDetails.createdBy
+            - jsonPath: $.landInfo.ownerAddresses.*.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.ownerAddresses.*.auditDetails.createdTime
+            - jsonPath: $.landInfo.ownerAddresses.*.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.ownerAddresses.*.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Institution
+        - query: >
+            INSERT INTO ug_land_institution (
+              id, tenant_id, type, designation, name_of_authorized_person,
+              land_info_id, created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              tenant_id = EXCLUDED.tenant_id,
+              type = EXCLUDED.type,
+              designation = EXCLUDED.designation,
+              name_of_authorized_person = EXCLUDED.name_of_authorized_person,
+              land_info_id = EXCLUDED.land_info_id,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.institution
+          jsonMaps:
+            - jsonPath: $.landInfo.institution.id
+            - jsonPath: $.landInfo.institution.tenantId
+            - jsonPath: $.landInfo.institution.type
+            - jsonPath: $.landInfo.institution.designation
+            - jsonPath: $.landInfo.institution.nameOfAuthorizedPerson
+            - jsonPath: $.landInfo.id
+            - jsonPath: $.landInfo.address.auditDetails.createdBy
+            - jsonPath: $.landInfo.address.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.address.auditDetails.createdTime
+            - jsonPath: $.landInfo.address.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.institution.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Documents
+        - query: >
+            INSERT INTO ug_land_document (
+              id, document_type, file_store_id, document_uid, land_info_id,
+              created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              document_type = EXCLUDED.document_type,
+              file_store_id = EXCLUDED.file_store_id,
+              document_uid = EXCLUDED.document_uid,
+              land_info_id = EXCLUDED.land_info_id,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.documents.*
+          jsonMaps:
+            - jsonPath: $.landInfo.documents.*.id
+            - jsonPath: $.landInfo.documents.*.documentType
+            - jsonPath: $.landInfo.documents.*.fileStoreId
+            - jsonPath: $.landInfo.documents.*.documentUid
+            - jsonPath: $.landInfo.id
+            - jsonPath: $.landInfo.documents.*.auditDetails.createdBy
+            - jsonPath: $.landInfo.documents.*.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.documents.*.auditDetails.createdTime
+            - jsonPath: $.landInfo.documents.*.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.documents.*.additionalDetails
+              type: JSON
+              dbType: JSONB
+
+        # Upsert Units
+        - query: >
+            INSERT INTO ug_land_unit (
+              id, tenant_id, floor_no, unit_type, usage_category, occupancy_type,
+              occupancy_date, land_info_id, created_by, last_modified_by, created_time, last_modified_time, additional_details
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB)
+            ON CONFLICT (id) DO UPDATE SET
+              tenant_id = EXCLUDED.tenant_id,
+              floor_no = EXCLUDED.floor_no,
+              unit_type = EXCLUDED.unit_type,
+              usage_category = EXCLUDED.usage_category,
+              occupancy_type = EXCLUDED.occupancy_type,
+              occupancy_date = EXCLUDED.occupancy_date,
+              land_info_id = EXCLUDED.land_info_id,
+              last_modified_by = EXCLUDED.last_modified_by,
+              last_modified_time = EXCLUDED.last_modified_time,
+              additional_details = EXCLUDED.additional_details;
+          basePath: landInfo.units.*
+          jsonMaps:
+            - jsonPath: $.landInfo.units.*.id
+            - jsonPath: $.landInfo.units.*.tenantId
+            - jsonPath: $.landInfo.units.*.floorNo
+            - jsonPath: $.landInfo.units.*.unitType
+            - jsonPath: $.landInfo.units.*.usageCategory
+            - jsonPath: $.landInfo.units.*.occupancyType
+            - jsonPath: $.landInfo.units.*.occupancyDate
+            - jsonPath: $.landInfo.id
+            - jsonPath: $.landInfo.units.*.auditDetails.createdBy
+            - jsonPath: $.landInfo.units.*.auditDetails.lastModifiedBy
+            - jsonPath: $.landInfo.units.*.auditDetails.createdTime
+            - jsonPath: $.landInfo.units.*.auditDetails.lastModifiedTime
+            - jsonPath: $.landInfo.units.*.additionalDetails
+              type: JSON
+              dbType: JSONB
+
