@@ -23,7 +23,7 @@ public class LandValidator {
 	 private LandMDMSValidator mdmsValidator;
 
 	public void validateLandInfo(@Valid LandInfoRequest landRequest,  Object mdmsData) {
-		mdmsValidator.validateMdmsData(landRequest, mdmsData);
+//		mdmsValidator.validateMdmsData(landRequest, mdmsData);
 		validateApplicationDocuments(landRequest, null);
 //		validateUser(landRequest);
 		//validateDuplicateUser(landRequest);

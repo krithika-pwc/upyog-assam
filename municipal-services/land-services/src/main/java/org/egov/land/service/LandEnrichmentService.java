@@ -140,6 +140,7 @@ public class LandEnrichmentService {
 			boundaryService.getAreaType(landRequest, config.getHierarchyTypeCode());
 		}
 
+		// Setting institution id and tenant id it is null/empty and institution object is not null
 		if (landRequest.getLandInfo().getInstitution() != null) {
 			if (StringUtils.isEmpty(landRequest.getLandInfo().getInstitution().getId()))
 				landRequest.getLandInfo().getInstitution().setId(UUID.randomUUID().toString());
