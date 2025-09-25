@@ -15,6 +15,14 @@ public class Toilet implements Serializable  {
 	private List<Measurement> toilets;
 	private BigDecimal toiletVentilation;
 	
+	private List<BigDecimal> toiletWindowWidth;
+	
+	public List<BigDecimal> getToiletWindowWidth() {
+		return toiletWindowWidth;
+	}
+	public void setToiletWindowWidth(List<BigDecimal> toiletWindowWidth) {
+		this.toiletWindowWidth = toiletWindowWidth;
+	}
 	public List<Measurement> getToilets() {
 		return toilets;
 	}

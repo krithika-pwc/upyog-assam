@@ -264,7 +264,7 @@ public class SideYardService_Assam extends SideYardService {
 				}
 
 				if (isApplicableSubtype(occupancy)) {
-					if (buildingHeight.compareTo(BigDecimal.valueOf(10)) <= 0)
+					//if (buildingHeight.compareTo(BigDecimal.valueOf(10)) <= 0)
 							//&& block.getBuilding().getFloorsAboveGround().compareTo(BigDecimal.valueOf(3)) <= 0)
 					{
 						checkSideYardCommon(pl, block, block.getBuilding(), buildingHeight, block.getName(),

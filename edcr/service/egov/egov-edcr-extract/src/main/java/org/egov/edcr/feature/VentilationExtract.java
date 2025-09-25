@@ -199,11 +199,11 @@ public class VentilationExtract extends FeatureExtract {
                     kitchen.setKitchenWindowWidth(allWindowWidths);
                 }
                 
-                if (!allWindowWidths.isEmpty()) {
+                if (!allDoorHeights.isEmpty()) {
                     kitchen.setKitchenDoorHeight(allDoorHeights);               }
                 
-                if (!allWindowWidths.isEmpty()) {
-                    kitchen.setKitchenDoorWidth(allDoorHeights);
+                if (!allDoorWidths.isEmpty()) {
+                    kitchen.setKitchenDoorWidth(allDoorWidths);
                 }
                 
                 
