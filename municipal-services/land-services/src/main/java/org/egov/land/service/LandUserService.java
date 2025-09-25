@@ -2,14 +2,7 @@ package org.egov.land.service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.validation.Valid;
 
@@ -53,46 +46,100 @@ public class LandUserService {
 	@Autowired
 	MultiStateInstanceUtil centralInstanceUtil;
 
+//	public void manageUser(LandInfoRequest landRequest) {
+//		LandInfo landInfo = landRequest.getLandInfo();
+//		 @Valid RequestInfo requestInfo = landRequest.getRequestInfo();
+//
+//		landInfo.getOwners().forEach(owner -> {
+//			UserDetailResponse userDetailResponse = null;
+//			if (owner.getMobileNumber() != null) {
+//
+//				if (owner.getTenantId() == null) {
+//					owner.setTenantId(centralInstanceUtil.getStateLevelTenant(landInfo.getTenantId()));
+//				}
+//
+//				userDetailResponse = userExists(owner, requestInfo);
+//
+//				if (userDetailResponse == null || CollectionUtils.isEmpty(userDetailResponse.getUser())
+//					//TODO: check this condition and uncomment if required
+//					//	|| !owner.compareWithExistingUser(userDetailResponse.getUser().get(0))
+//					) {
+//					// if no user found with mobileNo or details were changed,
+//					// creating new one..
+//					Role role = getCitizenRole();
+//					addUserDefaultFields(owner.getTenantId(), role, owner);
+//					StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserContextPath())
+//							.append(config.getUserCreateEndpoint());
+//					setUserName(owner);
+//					owner.setOwnerType(LandConstants.CITIZEN);
+//					OwnerInfo ownerInfo = convertToOwnerInfo(owner);
+//					log.info("ownerInfo-->" + ownerInfo);
+//					userDetailResponse = userCall(new CreateUserRequest(requestInfo, ownerInfo), uri);
+//					log.debug("owner created --> " + userDetailResponse.getUser().get(0).getUuid());
+//				}
+//				if (userDetailResponse != null)
+//					setOwnerFields(owner, userDetailResponse, requestInfo);
+//
+//			} else {
+//				log.debug("MobileNo is not existed in ownerInfo.");
+//				throw new CustomException(LandConstants.INVALID_ONWER_ERROR, "MobileNo is mandatory for ownerInfo");
+//			}
+//		});
+//	}
+
+
+	/*
+	* Fetches existing owner info from UserService.
+	* Compares incoming info vs existing info (ignoring username, type, role, tenantId, active).
+	*/
 	public void manageUser(LandInfoRequest landRequest) {
 		LandInfo landInfo = landRequest.getLandInfo();
-		 @Valid RequestInfo requestInfo = landRequest.getRequestInfo();
+		RequestInfo requestInfo = landRequest.getRequestInfo();
 
-		landInfo.getOwners().forEach(owner -> {
-			UserDetailResponse userDetailResponse = null;
-			if (owner.getMobileNumber() != null) {
-				
-				if (owner.getTenantId() == null) {
-					owner.setTenantId(centralInstanceUtil.getStateLevelTenant(landInfo.getTenantId()));
-				}
+		landInfo.getOwners().forEach(ownerInfoV2 -> {
 
-				userDetailResponse = userExists(owner, requestInfo);
-
-				if (userDetailResponse == null || CollectionUtils.isEmpty(userDetailResponse.getUser())
-					//TODO: check this condition and uncomment if required
-					//	|| !owner.compareWithExistingUser(userDetailResponse.getUser().get(0))
-					) {
-					// if no user found with mobileNo or details were changed,
-					// creating new one..
-					Role role = getCitizenRole();
-					addUserDefaultFields(owner.getTenantId(), role, owner);
-					StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserContextPath())
-							.append(config.getUserCreateEndpoint());
-					setUserName(owner);
-					owner.setOwnerType(LandConstants.CITIZEN);
-					OwnerInfo ownerInfo = convertToOwnerInfo(owner);
-					log.info("ownerInfo-->" + ownerInfo);
-					userDetailResponse = userCall(new CreateUserRequest(requestInfo, ownerInfo), uri);
-					log.debug("owner created --> " + userDetailResponse.getUser().get(0).getUuid());
-				}
-				if (userDetailResponse != null)
-					setOwnerFields(owner, userDetailResponse, requestInfo);
-				
-			} else {
-				log.debug("MobileNo is not existed in ownerInfo.");
+			// Step 1: Mobile number is mandatory
+			if (ownerInfoV2.getMobileNumber() == null) {
 				throw new CustomException(LandConstants.INVALID_ONWER_ERROR, "MobileNo is mandatory for ownerInfo");
 			}
+
+			// Step 2: Ensure tenantId is set
+			if (ownerInfoV2.getTenantId() == null) {
+				ownerInfoV2.setTenantId(centralInstanceUtil.getStateLevelTenant(landInfo.getTenantId()));
+			}
+
+			// Step 3: Fetch existing user from UserService
+			UserDetailResponse existingUserResponse = userExists(ownerInfoV2, requestInfo);
+			OwnerInfo existingOwnerInfo = null;
+			if (existingUserResponse != null && !CollectionUtils.isEmpty(existingUserResponse.getUser())) {
+				existingOwnerInfo = existingUserResponse.getUser().get(0);
+				log.info("User found "+existingOwnerInfo.getUserName() );
+			}
+
+			// Step 4: Convert incoming owner v2 to OwnerInfo for comparison
+			OwnerInfo ownerInfoToCompare = convertToOwnerInfo(ownerInfoV2);
+
+			// Step 5: Check if owner info has changed
+			if (existingOwnerInfo == null || isOwnerInfoChanged(ownerInfoV2, existingOwnerInfo)) {
+				// Step 5a: Add default fields for a Citizen user
+				Role role = getCitizenRole();
+				addUserDefaultFields(ownerInfoV2.getTenantId(), role, ownerInfoV2);
+				setUserName(ownerInfoV2);
+				ownerInfoV2.setOwnerType(LandConstants.CITIZEN);
+
+				// Step 5b: Call UserService to create or update user
+				String uri = config.getUserHost() +
+						(existingOwnerInfo == null ? config.getUserCreateEndpoint() : config.getUserUpdateEndpoint());
+
+				userCall(new CreateUserRequest(requestInfo, ownerInfoToCompare), new StringBuilder(uri));
+			}
+
+			// Note: No need to update id/uuid here as they are immutable in UserService
 		});
 	}
+
+
+
 
 	private OwnerInfo convertToOwnerInfo(OwnerInfoV2 ownerInfoV2) {
 		OwnerInfo ownerInfo = new OwnerInfo();
@@ -324,4 +371,32 @@ public class LandUserService {
 		userSearchRequest.setUserType(LandConstants.CITIZEN);
 		return userSearchRequest;
 	}
+
+
+	/*This will compare incoming owner info (OwnerInfoV2) with existing owner info from UserService (OwnerInfo)
+	*
+	* 1. Returns true if the owner info has changed.
+	* 2. Ignores username, type, role, tenantId, active as requested.
+	*/
+	private boolean isOwnerInfoChanged(OwnerInfoV2 incoming, OwnerInfo existing) {
+		if (existing == null) return true; // if user not found, treat as changed
+
+		if (!Objects.equals(incoming.getName(), existing.getName())) return true;
+		if (!Objects.equals(incoming.getEmailId(), existing.getEmailId())) return true;
+		if (!Objects.equals(incoming.getMobileNumber(), existing.getMobileNumber())) return true;
+		if (!Objects.equals(incoming.getGender(), existing.getGender())) return true;
+		if (!Objects.equals(incoming.getFatherOrHusbandName(), existing.getFatherOrHusbandName())) return true;
+
+		// Compare addresses
+		String incomingPermanent = incoming.getPermanentAddress() != null ? incoming.getPermanentAddress().getAddressLine1() : null;
+		String existingPermanent = existing.getPermanentAddress() != null ? existing.getPermanentAddress() : null;
+		if (!Objects.equals(incomingPermanent, existingPermanent)) return true;
+
+		String incomingCorr = incoming.getCorrespondenceAddress() != null ? incoming.getCorrespondenceAddress().getAddressLine1() : null;
+		String existingCorr = existing.getCorrespondenceAddress() != null ? existing.getCorrespondenceAddress() : null;
+		if (!Objects.equals(incomingCorr, existingCorr)) return true;
+
+		return false; // no changes detected
+	}
+
 }
