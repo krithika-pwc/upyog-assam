@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
+import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
@@ -117,7 +118,7 @@ public class PaymentUpdateService {
 					 */
 					enrichmentService.postStatusEnrichment(updateRequest);
 
-					repository.update(updateRequest);
+					repository.update(updateRequest, BPAConstants.UPDATE);
 
 				}
 			}

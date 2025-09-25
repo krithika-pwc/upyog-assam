@@ -451,6 +451,33 @@ public class BPAService {
             throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "Failed to Update the Application, Found None or multiple applications!");
         }
 
+        // Handle RTP details update without workflow (only for citizens)
+        BPA existingBPA = searchResult.get(0);
+
+        /* RTP details can be updated without workflow only when all the below conditions are met:
+         * 1. The existing application should not have RTP details as null
+         * 2. The incoming application should not have RTP details as null
+         * 3. The RTP UUID of existing and incoming application should be different
+         * 4. The action in workflow should be null or empty
+         * 5. The role of the logged in user should be CITIZEN
+         */
+        if (existingBPA.getRtpDetails() != null  && bpa.getRtpDetails() != null && !existingBPA.getRtpDetails().getRtpUUID().equals(bpa.getRtpDetails().getRtpUUID())){            // Set audit details and update directly without workflow
+            bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
+            enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
+            repository.update(bpaRequest, BPAConstants.RTP_UPDATE);
+            log.info("RTP details updated successfully without workflow for citizen application: {}", bpa.getApplicationNo());
+            return bpaRequest.getBPA();
+        }
+
+        if ("EDIT".equals(bpa.getWorkflow().getAction())) {
+            bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
+            enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
+            wfIntegrator.callWorkFlow(bpaRequest);
+            repository.update(bpaRequest, BPAConstants.UPDATE_ALL_BUILDING_PLAN);
+            landService.updateLandInfo(bpaRequest);
+            return bpaRequest.getBPA();
+        }
+
 
       //  Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map<String, String>) bpa.getAdditionalDetails()
      //           : new HashMap<String, String>();
@@ -519,7 +546,7 @@ public class BPAService {
          */
 
 
-        repository.update(bpaRequest);
+        repository.update(bpaRequest, BPAConstants.UPDATE);
         return bpaRequest.getBPA();
 
     }

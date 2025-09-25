@@ -6,6 +6,11 @@ import org.springframework.stereotype.Component;
 public class BPAConstants {
 
 	// MDMS
+	public static final String RTP_UPDATE= "RTP_UPDATE";
+
+	public static final String UPDATE_ALL_BUILDING_PLAN= "UPDATE_ALL_BUILDING_PLAN";
+
+	public  static final String UPDATE = "UPDATE";
 
 	public static final String BPA_MODULE = "BPA";
 

@@ -140,7 +140,9 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 		}
 
 		RTPAllocationDetails rtpDetail = RTPAllocationDetails.builder()
-				.id(rtpId)
+				.id(rs.getString("id"))
+				.applicationId(rs.getString("buildingplan_id"))
+				.rtpUUID(rs.getString("rtp_id"))
 				.rtpCategory(RTPAllocationDetails.RTPCategory.valueOf(rs.getString("rtp_category")))
 				.rtpName(rs.getString("rtp_name"))
 				.assignmentStatus(rs.getString("rtp_assignment_status"))
