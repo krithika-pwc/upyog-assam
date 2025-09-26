@@ -86,28 +86,14 @@ public class CalculationUtils {
 
 		String billingBusinessService;
 		switch (feeType) {
-		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_APL_FEETYPE:
-			if (businessService.equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA) || businessService.equalsIgnoreCase(BPACalculatorConstants.BUSINESSSERVICE_PREAPPROVEDPLAN)) {
-				billingBusinessService = config.getApplFeeBusinessService();
-			} else {
-				billingBusinessService = config.getOCApplBusinessservice();
-			}
+		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_PLANNING_PERMIT_FEE:
+			billingBusinessService = config.getPlanningPermitFeeBusinessService();
 			break;
-		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_SANC_FEETYPE:
-			if (businessService.equalsIgnoreCase(BPACalculatorConstants.MDMS_BPA) || businessService.equalsIgnoreCase(BPACalculatorConstants.BUSINESSSERVICE_PREAPPROVEDPLAN)) {
-				billingBusinessService = config.getSanclFeeBusinessService();
-			} else {
-				billingBusinessService = config.getOCSancBusinessservice();
-			}
+		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_BUILDING_PERMIT_FEE:
+			billingBusinessService = config.getBldgPermitBusinessservice();
 			break;
-		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_LOW_APL_FEETYPE:
-			billingBusinessService = config.getLowRiskPermitFeeBusinessService();
-			break;
-		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_LOW_SANC_FEETYPE:
-			billingBusinessService = config.getLowRiskPermitFeeBusinessService();
-			break;
-		case BPACalculatorConstants.LOW_RISK_PERMIT_FEE_TYPE:
-			billingBusinessService = config.getLowRiskPermitFeeBusinessService();
+		case BPACalculatorConstants.MDMS_CALCULATIONTYPE_BUILDING_PERMIT_RENEWAL_FEE:
+			billingBusinessService = config.getBldgPermitRenewalBusinessservice();
 			break;
 		default:
 			billingBusinessService = feeType;

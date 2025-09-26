@@ -79,7 +79,7 @@ public class CalculationService {
 		String tenantId = calculationReq.getCalulationCriteria().get(0)
 				.getTenantId();
 		Object mdmsData = mdmsService.mDMSCall(calculationReq, tenantId);
-		List<Calculation> calculations = getCalculation(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
+		List<Calculation> calculations = calculateFee(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
 		demandService.generateDemand(calculationReq.getRequestInfo(),calculations, mdmsData);
 		CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
 		producer.push(config.getSaveTopic(), calculationRes);

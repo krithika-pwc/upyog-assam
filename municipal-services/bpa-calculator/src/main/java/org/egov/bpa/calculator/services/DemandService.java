@@ -25,6 +25,7 @@ import org.egov.bpa.calculator.web.models.demand.Demand;
 import org.egov.bpa.calculator.web.models.demand.DemandDetail;
 import org.egov.bpa.calculator.web.models.demand.DemandResponse;
 import org.egov.bpa.calculator.web.models.demand.TaxHeadEstimate;
+import org.egov.bpa.calculator.web.models.landinfo.OwnerInfo;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.tracer.model.CustomException;
@@ -240,7 +241,11 @@ public class DemandService {
             String tenantId = calculation.getTenantId();
             String consumerCode = calculation.getBpa().getApplicationNo();
 
-            User owner = bpa.getLandInfo().getOwners().get(0).toCommonUser();
+            User owner = new User();
+            List<OwnerInfo> owners = bpa.getLandInfo().getOwners();
+            if (owners != null && !owners.isEmpty()) {
+                owner = owners.get(0).toCommonUser();
+            } 
 
             List<DemandDetail> demandDetails = new LinkedList<>();
 

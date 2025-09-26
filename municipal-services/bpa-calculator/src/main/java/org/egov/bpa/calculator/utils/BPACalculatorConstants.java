@@ -43,6 +43,12 @@ public class BPACalculatorConstants {
 	public static final String MDMS_CALCULATIONTYPE_LOW_SANC_FEETYPE = "Low_SanctionFee";
 
 	public static final String MDMS_CALCULATIONTYPE_LOW_APL_FEETYPE = "Low_ApplicationFee";
+
+	public static final String MDMS_CALCULATIONTYPE_PLANNING_PERMIT_FEE = "PLANNING_PERMIT_FEE";
+
+	public static final String MDMS_CALCULATIONTYPE_BUILDING_PERMIT_FEE = "BUILDING_PERMIT_FEE";
+
+	public static final String MDMS_CALCULATIONTYPE_BUILDING_PERMIT_RENEWAL_FEE = "BUILDING_PERMIT_RENEWAL_FEE";
 	
 	// Error messages in BPA Calculator
 	

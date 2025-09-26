@@ -36,13 +36,6 @@ public class BPACalculatorConfig {
     @Value("${egov.demand.minimum.payable.amount}")
     private BigDecimal minimumPayableAmount;
 
-    @Value("${egov.demand.appl.businessservice}")
-    private String applFeeBusinessService;
-
-    @Value("${egov.demand.sanc.businessservice}")
-    private String sanclFeeBusinessService;
-  
-
     //tradelicense Registry
     @Value("${egov.tradelicense.host}")
     private String bpaHost;
@@ -118,14 +111,14 @@ public class BPACalculatorConfig {
     @Value("${egov.edcr.getPlan.endpoint}")
 	private String getPlanEndPoint;
     
-    @Value("${egov.demand.lowriskpermit.businessservice}")
-    private String lowRiskPermitFeeBusinessService;
+    @Value("${egov.demand.planningpermit.businessservice}")
+    private String planningPermitFeeBusinessService;
     
-    @Value("${egov.demand.oc.appl.businessservice}")
-    private String OCApplBusinessservice;
+    @Value("${egov.demand.bldgpermit.businessservice}")
+    private String bldgPermitBusinessservice;
     
-    @Value("${egov.demand.oc.sanc.businessservice}")
-    private String OCSancBusinessservice;
+    @Value("${egov.demand.bldgpermitrenewal.businessservice}")
+    private String bldgPermitRenewalBusinessservice;
     
     //CalculaterType Default Values
 //    @Value("${egov.tl.calculationtype.tradetype.default}")
