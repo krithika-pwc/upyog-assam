@@ -16,6 +16,9 @@ const BPAEmployeeDetails = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [showToast, setShowToast] = useState(null);
   //const [workflowDetails, setWorkflowDetails] = useState(null);
+  const [isSiteFormValid, setIsSiteFormValid] = useState(false);
+
+  
   const [displayMenu, setDisplayMenu] = useState(false);
   const { roles } = Digit.UserService.getUser().info;
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -56,7 +59,7 @@ const BPAEmployeeDetails = () => {
 
   const handlePlanningPermitOrder = async () => {
     const application = data?.applicationData;
-    let fileStoreId = application?.ppFileStoreId;
+    let fileStoreId =application?.signedPpFileStoreId || application?.ppFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail;
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -103,7 +106,7 @@ const BPAEmployeeDetails = () => {
 
   const handleBuildingPermitOrder = async () => {
     const application = data?.applicationData;
-    let fileStoreId = application?.bpFileStoreId;
+    let fileStoreId = application?.signedBpFileStoreId || application?.bpFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail;
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -149,7 +152,7 @@ const BPAEmployeeDetails = () => {
   // Occupancy Certificate Download
   async function getBuildingOccupancy(mode="download") {
     const application = data?.applicationData;
-    let fileStoreId = application?.ocFileStoreId;
+    let fileStoreId =application?.signedOcFileStoreId || application?.ocFileStoreId;
       if (!fileStoreId) {
       let currentDate = new Date();
       let applicationNo = data?.bpa?.[0]?.applicationNo;
@@ -181,6 +184,23 @@ const BPAEmployeeDetails = () => {
     });
     window.open(fileStore[fileStoreId], "_blank");
   }
+
+  useEffect(() => {
+  const interval = setInterval(() => {
+    const stored = sessionStorage.getItem("SITE_REPORT_VALID");
+    if (stored !== null) {
+      const value = JSON.parse(stored);
+      setIsSiteFormValid(value);
+    }
+  }, 300); // 300ms
+
+  return () => clearInterval(interval);
+}, []);
+
+  const applicationStatus = workflowDetails?.data?.actionState?.state || "";
+  const isSubmitReportAction = workflowDetails?.data?.nextActions?.some((action) => action.action === "SUBMIT_REPORT");
+  const isSubmitDisabled = (applicationStatus === "PENDING_DA_ENGINEER" || applicationStatus === "PENDING_GMDA_ENGINEER") && !isSiteFormValid;
+
 
   let downloadOptions = [];
   if (data?.collectionBillDetails?.[0]) {
@@ -328,8 +348,8 @@ const BPAEmployeeDetails = () => {
           
       <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         </div>
-        {(data?.applicationData?.status === "PENDING_DA_ENGINEER") && 
-        (userInfo?.info?.roles.some(role => ["BPA_ENGINEER", "BPA_ENGINEER_DA"].includes(role.code)) && 
+        {(data?.applicationData?.status === "PENDING_DA_ENGINEER" || data?.applicationData?.status === "PENDING_GMDA_ENGINEER") && 
+        (isSubmitReportAction && 
         <FormComposer
         heading={t("")}
         isDisabled={!canSubmit}
@@ -372,6 +392,7 @@ const BPAEmployeeDetails = () => {
           statusAttribute={"state"}
           timelineStatusPrefix={`WF_${workflowDetails?.data?.applicationBusinessService ? workflowDetails?.data?.applicationBusinessService : data?.applicationData?.businessService}_`}
           nocDetails={mappedNocData}
+          isSubmitDisabled={isSubmitDisabled}
         />
       </div>
       </div>

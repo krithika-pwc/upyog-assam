@@ -3,13 +3,9 @@ package org.egov.bpa.validator;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.egov.bpa.config.BPAConfiguration;
@@ -18,10 +14,7 @@ import org.egov.bpa.service.NocService;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.util.BPAUtil;
-import org.egov.bpa.web.model.BPA;
-import org.egov.bpa.web.model.BPARequest;
-import org.egov.bpa.web.model.BPASearchCriteria;
-import org.egov.bpa.web.model.Document;
+import org.egov.bpa.web.model.*;
 import org.egov.bpa.web.model.NOC.Noc;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
@@ -33,6 +26,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
+
+import static org.egov.bpa.util.BPAConstants.*;
 
 @Component
 @Slf4j
@@ -54,37 +49,31 @@ public class BPAValidator {
 	private NocService nocService;
 
 	/**
-	 * Validates the MDMS data for the given BPA request.
-	 *
-	 * @param bpaRequest The BPA request object.
-	 * @param mdmsData The MDMS data for validation.
-	 */
-	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData) {
-		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
-	}
-
-	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData) {
-		mdmsValidator.validateStateMdmsData(bpaRequest, mdmsData);
-	}
-
-	/**
 	 * Validates the BPA request during creation.
 	 * Ensures that MDMS data, application documents, and risk type are valid.
 	 *
 	 * @param bpaRequest The BPA request object.
-	 * @param mdmsData The MDMS data for validation.
-	 * @param values Additional values for validation.
+	 * @param tenantMdmsData The MDMS data for validation.
+	 * @param stateMdmsData Additional values for validation.
 	 */
-	public void validateCreate(BPARequest bpaRequest, Object mdmsData, Map<String, String> values) {
-        @SuppressWarnings("unchecked")
-		Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
+	public void validateCreate(BPARequest bpaRequest, Object tenantMdmsData, Object stateMdmsData) {
+		/*Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
                 ? (Map<String, String>) bpaRequest.getBPA().getAdditionalDetails()
-                : new HashMap<String, String>();
-		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
-		validateApplicationDocuments(bpaRequest, mdmsData, null, values);		
-        if (bpaRequest.getBPA().getRiskType() != null) {
+                : new HashMap<String, String>();*/
+
+        log.info("validateCreate method running...");
+
+        // Map to store lookup data for MDMS validation
+        Map<String, Set<String>> lookup = new HashMap<>();
+		mdmsValidator.validateMdmsData(bpaRequest, tenantMdmsData, lookup);
+		mdmsValidator.validateStateMdmsData(bpaRequest, stateMdmsData, lookup);
+
+		//TODO: need to check if it can be used
+	//	validateApplicationDocuments(bpaRequest, mdmsData, null, values);
+
+       /* if (bpaRequest.getBPA().getRiskType() != null) {
             additionalDetails.put(BPAConstants.RISKTYPE, bpaRequest.getBPA().getRiskType());
-        }
+        }*/
 		
 	}
 
@@ -204,7 +193,7 @@ public class BPAValidator {
 	 * @param requestInfo The request info containing user details.
 	 * @param criteria The BPA search criteria.
 	 */
-//TODO need to make the changes in the data
+   //TODO: need to make the changes in the data
 	public void validateSearch(RequestInfo requestInfo, BPASearchCriteria criteria) {
 		
 		log.info("Validating Search Parameters ");
@@ -212,7 +201,7 @@ public class BPAValidator {
 		log.info("criteria.isEmpty(): " + criteria.isEmpty());
 		
 		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(BPAConstants.CITIZEN) && criteria.isEmpty())
-			throw new CustomException(BPAErrorConstants.INVALID_SEARCH, "Search without any paramters is not allowed");
+			throw new CustomException(BPAErrorConstants.INVALID_SEARCH, "Search without any parameters is not allowed");
 
 		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(BPAConstants.CITIZEN) && !criteria.tenantIdOnly()
 				&& criteria.getTenantId() == null)
@@ -290,21 +279,26 @@ public class BPAValidator {
 	/**
 	 * valide the update BPARequest
 	 * @param bpaRequest
-	 * @param searchResult
-	 * @param mdmsData
-	 * @param currentState
-	 * @param edcrResponse
+	 * @param tenantMdmsData
+	 * @param stateMdmsData
 	 */
-	public void validateUpdate(BPARequest bpaRequest, List<BPA> searchResult, Object mdmsData, String currentState, Map<String, String> edcrResponse) {
-
-		BPA bpa = bpaRequest.getBPA();
+	public void validateUpdate(BPARequest bpaRequest, Object tenantMdmsData, Object stateMdmsData) {
+//		BPA bpa = bpaRequest.getBPA();
+        // Need to check if it can be used later
+        /*
 		validateApplicationDocuments(bpaRequest, mdmsData, currentState, edcrResponse);
 		validateAllIds(searchResult, bpa);
-		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
-		validateDuplicateDocuments(bpaRequest);
-		setFieldsFromSearch(bpaRequest, searchResult, mdmsData);
+ 		setFieldsFromSearch(bpaRequest, searchResult, mdmsData);
+        */
 
-	}
+        log.info("Validating BPA Update data...");
+
+        // Map to store lookup data for MDMS validation
+        Map<String, Set<String>> lookup = new HashMap<>();
+		mdmsValidator.validateMdmsData(bpaRequest, tenantMdmsData, lookup);
+        mdmsValidator.validateStateMdmsData(bpaRequest, stateMdmsData, lookup);
+		validateDuplicateDocuments(bpaRequest);
+    }
 
 	/**
 	 * Set the fields from search result to the bpaRequest
@@ -349,9 +343,6 @@ public class BPAValidator {
 
 		if (!searchedBpa.getId().equalsIgnoreCase(bpa.getId()))
 			errorMap.put("INVALID UPDATE", "The id " + bpa.getId() + " does not exist");
-
-
-
 
 		if (!CollectionUtils.isEmpty(errorMap))
 			throw new CustomException(errorMap);
@@ -592,75 +583,221 @@ public class BPAValidator {
 		}
 	}
 
-	/**
-	 * validate the workflow and the nocapproval stages to move forward
-	 * @param bpaRequest
-	 * @param mdmsRes
-	 */
-	public void validatePreEnrichData(BPARequest bpaRequest, Object mdmsRes) {		
-		validateSkipPaymentAction(bpaRequest);
-		validateNocApprove(bpaRequest, mdmsRes);
-	}
-	/**
-	 * Validate workflowActions against the skipPayment 
-	 * @param bpaRequest
-	 */
-	private void validateSkipPaymentAction(BPARequest bpaRequest) {
-		BPA bpa = bpaRequest.getBPA();
-		if (bpa.getWorkflow().getAction() != null && (bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SKIP_PAY))) {
-			BigDecimal demandAmount = bpaUtil.getDemandAmount(bpaRequest);
-			if ((demandAmount.compareTo(BigDecimal.ZERO) > 0)) {
-				throw new CustomException(BPAErrorConstants.BPA_INVALID_ACTION, "Payment can't be skipped once demand is generated.");
+	public void validateActionForPendingNoc(BPARequest bpaRequest) {
+
+		if (!config.getValidateRequiredNoc()) {
+			log.info("Skipping pending NOC validation as per configuration");
+			return;
+		}
+
+		String action = Optional.ofNullable(bpaRequest.getBPA().getWorkflow()).map(Workflow::getAction).orElse("");
+
+		List<String> pendingNocNotAllowedActions =
+				Arrays.stream(config.getPendingNocNotAllowedActions().split(","))
+						.map(String::trim)
+						.map(s -> s.replace("\"", "")) // safety for quoted configs
+						.collect(Collectors.toList());
+
+		log.debug("pendingNocNotAllowedActions: {} ", pendingNocNotAllowedActions);
+
+		if (!pendingNocNotAllowedActions.contains(action)) {
+			return;
+		}
+
+		log.info("Validating pending NOC for action: {}", action);
+
+		List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
+		if (CollectionUtils.isEmpty(nocs)) {
+			return;
+		}
+
+		List<String> validStatuses =
+				Arrays.stream(config.getNocValidationCheckStatuses().split(","))
+						.map(String::trim)
+						.collect(Collectors.toList());
+
+		List<Noc> invalidNocs = new ArrayList<>();
+
+		for (Noc noc : nocs) {
+			if (!validStatuses.contains(noc.getApplicationStatus())) {
+				invalidNocs.add(noc);
 			}
 		}
-	}
-	
-	/**
-	 * Validates the NOC approval state to move forward the bpa applicaiton
-	 * @param bpaRequest
-	 * @param mdmsRes
-	 */
-	@SuppressWarnings("unchecked")
-	private void validateNocApprove(BPARequest bpaRequest, Object mdmsRes) {
-		BPA bpa = bpaRequest.getBPA();
-		log.debug("===========> valdiateNocApprove method called");
-		if (config.getValidateRequiredNoc()) {
-			if (bpa.getStatus().equalsIgnoreCase(BPAConstants.NOCVERIFICATION_STATUS)
-					&& bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_FORWORD)) {
-				Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(),
-						bpaRequest.getBPA());
-				log.debug("===========> valdiateNocApprove method called, application is in noc verification pending");
-				String riskType = "ALL";
-				if (StringUtils.isEmpty(bpa.getRiskType()) || bpa.getRiskType().equalsIgnoreCase("LOW")) {
-					riskType = bpa.getRiskType();
-				}
-				log.debug("fetching NocTypeMapping record having riskType : " + riskType);
 
-				String nocPath = BPAConstants.NOCTYPE_REQUIRED_MAP
-						.replace("{1}", edcrResponse.get(BPAConstants.APPLICATIONTYPE))
-						.replace("{2}", edcrResponse.get(BPAConstants.SERVICETYPE)).replace("{3}", riskType);
+		if (!invalidNocs.isEmpty()) {
 
-				List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsRes, nocPath);
-				List<String> nocTypes = JsonPath.read(nocMappingResponse, "$..code");
+			String errorMessage = invalidNocs.stream()
+					.map(noc -> String.format(
+							"NOC applicationNo=%s is in %s status",
+							noc.getApplicationNo(),
+							noc.getApplicationStatus()))
+					.collect(Collectors.joining(" | "));
 
-				log.debug("===========> valdiateNocApprove method called, noctypes====",nocTypes);
-				List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
-				if (!CollectionUtils.isEmpty(nocs)) {
-					for (Noc noc : nocs) {
-						if (!nocTypes.isEmpty() && nocTypes.contains(noc.getNocType())) {
-							List<String> statuses = Arrays.asList(config.getNocValidationCheckStatuses().split(","));
-							if(!statuses.contains(noc.getApplicationStatus())) {
-								log.error("Noc is not approved having applicationNo :" + noc.getApplicationNo());
-								throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
-										" Application can't be forwarded without NOC "
-												+ StringUtils.join(statuses, " or "));
-							}
-						}
-					}
-				} else {
-					log.debug("No NOC record found to validate with sourceRefId " + bpa.getApplicationNo());
-				}
-			}
+			log.error("Invalid NOCs found: {}", errorMessage);
+
+			throw new CustomException(
+					BPAErrorConstants.NOC_SERVICE_EXCEPTION,
+					"Application can't be forwarded without NOC approval. " + errorMessage
+			);
 		}
 	}
+
+	/**
+     * Validates checklist data against MDMS configuration and inspection data.
+     * Ensures mandatory fields are filled and inspection date is today's date.
+     *
+     * @param request The BPA request containing inspection data
+     */
+    public void validateChecklist(BPARequest request) {
+        log.info("Validating checklist data for BPA application: {}", request.getBPA().getApplicationNo());
+        BPA bpa = request.getBPA();
+        String tenantId = bpa.getTenantId();
+        String state = bpaUtil.extractState(tenantId);
+
+        // Get MDMS data for checklist
+        Object mdmsData = bpaUtil.mDMSCall(request.getRequestInfo(), state);
+
+        // Extract checklist data from MDMS
+        List<Object> checklistData = getChecklistFromMDMS(mdmsData, bpa);
+
+        if (CollectionUtils.isEmpty(checklistData)) {
+            throw new CustomException("CHECKLIST_VALIDATION_ERROR", "Checklist data fetch failed from mdms");
+        }
+        log.info("Checklist data to be validated: {}", checklistData);
+
+        // Get inspection data from BPA additional details
+        Object additionalDetails = bpa.getAdditionalDetails();
+        if (additionalDetails == null) {
+            throw new CustomException("CHECKLIST_VALIDATION_ERROR", "Additional details not found for checklist validation");
+        }
+
+        List<Map<String, Object>> inspectionData = getInspectionData(additionalDetails);
+        if (CollectionUtils.isEmpty(inspectionData)) {
+            throw new CustomException("CHECKLIST_VALIDATION_ERROR", "Inspection data not found for checklist validation");
+        }
+        log.info("Inspection Data: {}", inspectionData);
+
+        // Validating the date
+        validateDate(additionalDetails);
+
+        Map<String, Object> currentInspection = inspectionData.get(0);
+        validateMandatoryFields(checklistData, currentInspection);
+    }
+
+    /**
+     * Retrieves checklist questions from MDMS data based on application type and workflow state.
+     *
+     * @param mdmsData The MDMS data object
+     * @param bpa The BPA object (currently unused but kept for future extensibility)
+     * @return List of checklist questions from MDMS
+     */
+    private List<Object> getChecklistFromMDMS(Object mdmsData, BPA bpa) {
+        try {
+            String jsonPath = CHECKLIST_JSONPATH;
+            return JsonPath.read(mdmsData, jsonPath);
+        } catch (Exception e) {
+            log.error("Error reading checklist from MDMS: {}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Extracts inspection data from BPA additional details.
+     *
+     * @param additionalDetails The additional details object from BPA
+     * @return List of inspection data maps
+     */
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> getInspectionData(Object additionalDetails) {
+        Object inspectionObj = ((Map<String, Object>) additionalDetails).get(INSPECTION_CHECKLIST);
+        log.info("Inspection data from additional details: {}", inspectionObj);
+        if (inspectionObj instanceof List) {
+            return (List<Map<String, Object>>) inspectionObj;
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * Validates that the inspection date is today's date.
+     *
+     * @param additionalDetails The additional details object containing inspection data
+     */
+    @SuppressWarnings("unchecked")
+    private void validateDate(Object additionalDetails) {
+        List<Map<String, Object>> inspectionData = (List<Map<String, Object>>) ((Map<String, Object>) additionalDetails).get(SUBMIT_REPORT_KEY);
+
+        if (!CollectionUtils.isEmpty(inspectionData)) {
+            String inspectionDate = (String) inspectionData.get(0).get(INSPECTION_DATE_KEY);
+            log.info("Date to be validated: {}", inspectionDate);
+            if (inspectionDate != null) {
+                LocalDate today = LocalDate.now();
+                LocalDate inspection = LocalDate.parse(inspectionDate);
+                log.info("Today's date: {}, Inspection date: {}", today, inspection);
+                if (inspection.isAfter(today)) {
+                    throw new CustomException("INVALID_INSPECTION_DATE", "Inspection date cannot be a future date");
+                }
+            }
+        }
+    }
+
+    /**
+     * Validates mandatory fields from checklist against inspection data.
+     * Also validates that all inspection data keys are valid according to checklist.
+     *
+     * @param checklistData List of checklist questions from MDMS
+     * @param inspectionData Map containing inspection form data
+     */
+    private void validateMandatoryFields(List<Object> checklistData, Map<String, Object> inspectionData) {
+        log.info("Starting mandatory fields validation for {} checklist questions", checklistData.size());
+
+        Set<String> validFieldKeys = new HashSet<>();
+        List<String> missingFields = new ArrayList<>();
+
+        // Collect all valid field keys from checklist
+        for (Object questionObj : checklistData) {
+            Map<String, Object> question = (Map<String, Object>) questionObj;
+            String fieldKey = (String) question.get("fieldKey");
+            if (fieldKey != null) {
+                validFieldKeys.add(fieldKey);
+            }
+        }
+        log.info("Valid field keys from checklist: {}", validFieldKeys);
+
+        // Validate inspection data keys
+        for (String inspectionKey : inspectionData.keySet()) {
+            if (!validFieldKeys.contains(inspectionKey)) {
+                throw new CustomException("INVALID_FIELD_KEY", "Invalid field key in inspection data: " + inspectionKey);
+            }
+        }
+        log.info("All inspection data keys are valid");
+
+        log.info("Checking mandatory fields...");
+        for (Object questionObj : checklistData) {
+            Map<String, Object> question = (Map<String, Object>) questionObj;
+            Boolean mandatory = (Boolean) question.get("mandatory");
+            if (Boolean.TRUE.equals(mandatory)) {
+                String fieldKey = (String) question.get("fieldKey");
+                String questionName = (String) question.get("name");
+
+                if (fieldKey != null) {
+                    Object fieldValue = inspectionData.get(fieldKey);
+                    if (fieldValue == null || (fieldValue instanceof String && ((String) fieldValue).trim().isEmpty())) {
+                        log.warn("Mandatory field '{}' (key: {}) is missing or empty", questionName, fieldKey);
+                        missingFields.add(questionName);
+                    } else {
+                        log.debug("Mandatory field '{}' (key: {}) has value: {}", questionName, fieldKey, fieldValue);
+                    }
+
+                }
+            }
+        }
+
+        if (!missingFields.isEmpty()) {
+            log.error("Validation failed - Missing mandatory fields: {}", missingFields);
+            String errorMessage = "Mandatory fields are missing: " + String.join(", ", missingFields);
+            throw new CustomException("MANDATORY_FIELDS_MISSING", errorMessage);
+        }
+        log.info("Mandatory fields validation completed successfully");
+
+    }
 }

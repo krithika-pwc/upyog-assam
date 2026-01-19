@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
+public class BPADetailRowMapper implements ResultSetExtractor<List<BPA>> {
 
 	@Autowired
 	private ObjectMapper mapper;
@@ -108,6 +108,7 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 				.id(rs.getString("bpa_id"))
 				.applicationNo(rs.getString("application_no"))
 				.approvalNo(rs.getString("approval_no"))
+				.applicationType(rs.getString("application_type"))
 				.status(rs.getString("status"))
 				.tenantId(rs.getString("bpa_tenant_id"))
 				.edcrNumber(rs.getString("edcr_number"))

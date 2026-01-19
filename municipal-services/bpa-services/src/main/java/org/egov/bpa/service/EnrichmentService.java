@@ -81,7 +81,6 @@ public class EnrichmentService {
 	 * encrich create BPA Reqeust by adding audidetails and uuids
 	 *
 	 * @param bpaRequest
-	 * @param mdmsData
 	 * @param edcrValues
 	 */
 	public void enrichBPACreateRequest(BPARequest bpaRequest, Map<String, String> edcrValues) {
@@ -89,10 +88,10 @@ public class EnrichmentService {
 		AuditDetails auditDetails = bpaUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
 		bpaRequest.getBPA().setAuditDetails(auditDetails);
 		bpaRequest.getBPA().setId(UUID.randomUUID().toString());
-		bpaRequest.getBPA().getAreaMapping().setId(UUID.randomUUID().toString());
+		bpaRequest.getBPA().getAreaMapping().setId(BPAUtil.generateUUID());
 		if(bpaRequest.getBPA().getRtpDetails() != null){
 			//TODO:move this uuid generation to util method
-			bpaRequest.getBPA().getRtpDetails().setId(UUID.randomUUID().toString());
+			bpaRequest.getBPA().getRtpDetails().setId(BPAUtil.generateUUID());
 		}
         Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
                 ? (Map<String, String>) bpaRequest.getBPA().getAdditionalDetails()
@@ -206,173 +205,6 @@ public class EnrichmentService {
 	}
 
 	/**
-	 * postStatus encrichment to update the status of the workflow to the
-	 * application and generating permit and oc number when applicable
-	 *
-	 * @param bpaRequest
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void postStatusEnrichment(BPARequest bpaRequest) {
-		BPA bpa = bpaRequest.getBPA();
-		String tenantId =  centralInstanceUtil.getStateLevelTenant(bpaRequest.getBPA().getTenantId());
-		Object mdmsData = util.mDMSCall(bpaRequest.getRequestInfo(), tenantId);
-
-		BusinessService businessService = workflowService.getBusinessService(bpa, bpaRequest.getRequestInfo(),
-				bpa.getApplicationNo());
-		log.info("Application status is : " + bpa.getStatus());
-		String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
-
-		if (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE)) {
-			bpa.setApplicationDate(util.getCurrentTimestampMillis());
-		}
-
-		if (StringUtils.isEmpty(bpa.getRiskType())) {
-			if (bpa.getBusinessService().equals(BPAConstants.BPA_LOW_MODULE_CODE)) {
-				bpa.setRiskType(BPAConstants.LOW_RISKTYPE);
-			} else {
-				Map<String, List<String>> masterData = mdmsValidator.getAttributeValuesForState(mdmsData);
-				StringBuilder uri = new StringBuilder(config.getEdcrHost());
-				uri.append(config.getGetPlanEndPoint());
-				uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
-				uri.append("&").append("edcrNumber=").append(bpa.getEdcrNumber());
-				org.egov.bpa.web.model.edcr.RequestInfo edcrRequestInfo = new org.egov.bpa.web.model.edcr.RequestInfo();
-				
-				BeanUtils.copyProperties(bpaRequest.getRequestInfo(), edcrRequestInfo);
-				
-				LinkedHashMap responseMap = null;
-				
-				try {
-					responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri,
-							new RequestInfoWrapper(edcrRequestInfo));
-				} catch (ServiceCallException se) {
-					throw new CustomException(BPAErrorConstants.EDCR_ERROR, " EDCR Number is Invalid");
-				}
-
-				if (CollectionUtils.isEmpty(responseMap))
-					throw new CustomException(BPAErrorConstants.EDCR_ERROR, "The response from EDCR service is empty or null");
-				String jsonString = new JSONObject(responseMap).toString();
-			
-				DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
-				Object plot = context.read("edcrDetail[0].planDetail.planInformation.plotArea");
-				Double	plotArea = Double.valueOf(String.valueOf(plot));
-				Object bldgHgt = context.read("edcrDetail[0].planDetail.blocks[0].building.buildingHeight");
-				Double	buildingHeight = Double.valueOf(String.valueOf(bldgHgt));
-
-			
-				List jsonOutput = JsonPath.read(masterData, BPAConstants.RISKTYPE_COMPUTATION);
-				String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-						+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
-						+ buildingHeight + "  ))].riskType";
-
-				List<String> riskTypes = JsonPath.read(jsonOutput, filterExp);
-				                                                                                     
-				if (!CollectionUtils.isEmpty(riskTypes)) {
-					String	expectedRiskType  = riskTypes.get(0);
-					bpa.setRiskType(expectedRiskType);
-				}else
-				{
-					throw new CustomException(BPAErrorConstants.INVALID_RISK_TYPE, "The Risk Type is not valid " );
-				}
-				
-				
-				
-				
-			}
-		}
-
-		log.info("Application state is : " + state);
-		this.generateApprovalNo(bpaRequest, state);
-		nocService.initiateNocWorkflow(bpaRequest, mdmsData);
-
-	}
-
-	/**
-	 * generate the permit and oc number on approval status of the BPA and BPAOC
-	 * respectively
-	 *
-	 * @param bpaRequest
-	 * @param state
-	 */
-	private void generateApprovalNo(BPARequest bpaRequest, String state) {
-		BPA bpa = bpaRequest.getBPA();
-		if ((bpa.getBusinessService().equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-				&& bpa.getStatus().equalsIgnoreCase(BPAConstants.APPROVED_STATE))
-				|| (bpa.getStatus().equalsIgnoreCase(BPAConstants.APPROVED_STATE))
-				|| (!bpa.getBusinessService().equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-				&& ((!bpa.getRiskType().toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)
-				&& state.equalsIgnoreCase(BPAConstants.APPROVED_STATE))
-				|| (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE) && bpa.getRiskType()
-				.toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE))))) {
-			int vailidityInMonths = config.getValidityInMonths();
-			Calendar calendar = Calendar.getInstance();
-			bpa.setApprovalDate(util.getCurrentTimestampMillis());
-
-			// Adding 3years (36 months) to Current Date
-			calendar.add(Calendar.MONTH, vailidityInMonths);
-			Map<String, Object> additionalDetail = null;
-			if (bpa.getAdditionalDetails() != null) {
-				additionalDetail = (Map) bpa.getAdditionalDetails();
-			} else {
-				additionalDetail = new HashMap<String, Object>();
-				bpa.setAdditionalDetails(additionalDetail);
-			}
-
-			additionalDetail.put("validityDate", calendar.getTimeInMillis());
-
-			String tenantId = util.extractState(bpa.getTenantId());
-			List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), tenantId,
-					config.getPermitNoIdgenName(), null, 1).getIdResponses();
-			bpa.setApprovalNo(idResponses.get(0).getId());
-			if (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE)
-					&& bpa.getRiskType().toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)) {
-
-				Object mdmsData = bpaUtil.mDMSCall(bpaRequest.getRequestInfo(), bpaRequest.getBPA().getTenantId());
-				Map<String, String> edcrResponse = new HashMap<>();
-				
-			    edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(),
-							bpaRequest.getBPA());
-			     
-				log.debug("applicationType is " + edcrResponse.get(BPAConstants.APPLICATIONTYPE));
-				log.debug("serviceType is " + edcrResponse.get(BPAConstants.SERVICETYPE));
-
-				String condeitionsPath = BPAConstants.CONDITIONS_MAP.replace("{1}", BPAConstants.PENDING_APPROVAL_STATE)
-						.replace("{2}", bpa.getRiskType().toString())
-						.replace("{3}", edcrResponse.get(BPAConstants.SERVICETYPE))
-						.replace("{4}", edcrResponse.get(BPAConstants.APPLICATIONTYPE));
-				log.debug(condeitionsPath);
-
-				try {
-					List<String> conditions = (List<String>) JsonPath.read(mdmsData, condeitionsPath);
-					log.debug(conditions.toString());
-					if (bpa.getAdditionalDetails() == null) {
-						bpa.setAdditionalDetails(new HashMap());
-					}
-					Map additionalDetails = (Map) bpa.getAdditionalDetails();
-					additionalDetails.put(BPAConstants.PENDING_APPROVAL_STATE.toLowerCase(), conditions.get(0));
-
-				} catch (Exception e) {
-					log.warn("No approval conditions found for the application " + bpa.getApplicationNo());
-				}
-			}
-		}
-	}
-
-	/**
-	 * handles the skippayment of the BPA when demand is zero
-	 *
-	 * @param bpaRequest
-	 */
-	public void skipPayment(BPARequest bpaRequest) {
-		BPA bpa = bpaRequest.getBPA();
-		BigDecimal demandAmount = bpaUtil.getDemandAmount(bpaRequest);
-		if (!(demandAmount.compareTo(BigDecimal.ZERO) > 0)) {
-			Workflow workflow = Workflow.builder().action(BPAConstants.ACTION_SKIP_PAY).build();
-			bpa.setWorkflow(workflow);
-			wfIntegrator.callWorkFlow(bpaRequest);
-		}
-	}
-
-	/**
 	 * In case of SENDBACKTOCITIZEN enrich the assignee with the owners and creator
 	 * of BPA
 	 *
@@ -449,6 +281,92 @@ public class EnrichmentService {
 		if (StringUtils.isNotEmpty(newValue) && StringUtils.isEmpty(existingValue)) {
 			setter.accept(newValue);
 		}
+	}
+	/**
+	 * Enrich Permit Numbers based on status
+	 *
+	 * @param bpaRequest
+	 */
+	public void enrichPermitNumbers(BPARequest bpaRequest) {
+		List<String> planningPermitStatuses = Arrays.asList(
+				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB,
+				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP,
+				BPAConstants.FORWARDED_TO_ZONAL_OFFICER
+		);
+
+		if (planningPermitStatuses.contains(bpaRequest.getBPA().getStatus())) {
+			updatePlanningPermitNo(bpaRequest);
+		}
+
+		if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())) {
+			updateBuildingPermitNo(bpaRequest);
+			updateOccupancyCertificateNo(bpaRequest);
+		}
+	}
+
+	public void updatePlanningPermitNo(BPARequest bpaRequest) {
+		bpaRequest.getBPA().setPlanningPermitNo(getPlanningPermitNo(bpaRequest));
+		bpaRequest.getBPA().setPlanningPermitDate(util.getCurrentTimestampMillis());
+		log.info("Planning Permit No. generated : " + bpaRequest.getBPA().getPlanningPermitNo());
+	}
+
+	public void updateBuildingPermitNo(BPARequest bpaRequest) {
+		bpaRequest.getBPA().setBuildingPermitNo(getBuildingPermitNo(bpaRequest));
+		bpaRequest.getBPA().setBuildingPermitDate(util.getCurrentTimestampMillis());
+		log.info("Building Permit No. generated : " + bpaRequest.getBPA().getBuildingPermitNo());
+	}
+
+	public void updateOccupancyCertificateNo(BPARequest bpaRequest) {
+		bpaRequest.getBPA().setOccupancyCertificateNo(getOccupancyCertificateNo(bpaRequest));
+		bpaRequest.getBPA().setOccupancyCertificateDate(util.getCurrentTimestampMillis());
+		log.info("Occupancy Certificate No. generated : " + bpaRequest.getBPA().getOccupancyCertificateNo());
+	}
+
+	// Generate Occupancy Certificate Number
+	private String getOccupancyCertificateNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getOccupancyCertificateIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Occupancy Certificate Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
+
+	// Generate Occupancy Certificate Number
+	private String getPlanningPermitNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getPlanningPermitIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Planning Permit Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
+	// Generate Building Permit Number
+	private String getBuildingPermitNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getBuildingPermitIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Building Permit Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
 	}
 
 }

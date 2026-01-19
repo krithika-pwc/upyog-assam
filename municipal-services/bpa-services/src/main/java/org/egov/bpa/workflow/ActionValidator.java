@@ -122,14 +122,21 @@ public class ActionValidator {
 			throw new CustomException(errorMap);
 	}
 
-	public void validateActionForRTPUpdateWithoutWorkflowUpdate(BPARequest request, String action) {
-		String actions = config.getRtpReassignAction();
-		List<String> rtpActions = Arrays.asList(actions.split(","));
+	public void validateActionForRTPUpdateWithoutWorkflowUpdate(BPARequest request) {
+		String statusAllowed = config.getRtpReassignStatusAllowed();
+		List<String> rtpStatus = Arrays.asList(statusAllowed.split(","));
+		String status = request.getBPA().getStatus();
 
-		if(rtpActions.contains(action)) {
+		if(!rtpStatus.contains(status)) {
 			throw new CustomException("INVALID_RTP_REASSIGN","RTP can not be changed at this state");
 		}
 	}
 
 
+	public boolean isCitizenUpdateAllowed(BPARequest bpaRequest, BPA existingBPA) {
+		if(bpaRequest.getRequestInfo() == null || bpaRequest.getRequestInfo().getUserInfo() == null) {
+			return false;
+		}
+        return existingBPA.getAuditDetails().getCreatedBy().equals(bpaRequest.getRequestInfo().getUserInfo().getUuid());
+    }
 }

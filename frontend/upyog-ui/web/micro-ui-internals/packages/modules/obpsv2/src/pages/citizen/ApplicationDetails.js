@@ -255,7 +255,7 @@ import {
           ...applicationDetails.workflow, 
           action: selectedAction,
           comments: comments,
-          assignes: ["ACCEPT", "VALIDATE_GIS", "EDIT"].includes(selectedAction) ? [applicationDetails?.rtpDetails?.rtpUUID] : null,
+          assignes: ["ACCEPT", "VALIDATE_GIS", "EDIT","SEND_BACK_TO_RTP"].includes(selectedAction) ? [applicationDetails?.rtpDetails?.rtpUUID] : null,
             varificationDocuments: uploadedFile ? [
               {
                 documentType: file.type,
@@ -507,7 +507,7 @@ import {
     };
     const handleBuildingPermitOrder = async () => {
       const application = data?.bpa?.[0];
-      let fileStoreId = application?.bpFileStoreId;
+      let fileStoreId =application?.signedBpFileStoreId || application?.bpFileStoreId;
       const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.bpa?.[0]?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail?.[0];
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -554,7 +554,7 @@ import {
 
     const handlePlanningPermitOrder = async () => {
       const application = data?.bpa?.[0];
-      let fileStoreId = application?.ppFileStoreId;
+      let fileStoreId = application?.signedPpFileStoreId || application?.ppFileStoreId;
       const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.bpa?.[0]?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail?.[0];
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -599,7 +599,7 @@ import {
     // Occupancy Certificate Download
     const getBuildingOccupancy = async (mode="download") => {
       const application = data?.bpa?.[0];
-      let fileStoreId = application?.ocFileStoreId;
+      let fileStoreId =application?.signedOcFileStoreId || application?.ocFileStoreId;
       if (!fileStoreId) {
         let currentDate = new Date();
         let applicationNo = data?.bpa?.[0]?.applicationNo;
@@ -1087,6 +1087,10 @@ import {
               {bpa_details?.buildingPermitNo && (
                 <Row label={t("BPA_BUILDING_PERMIT_NO")} text={bpa_details.buildingPermitNo} />
               )}
+              {bpa_details?.occupancyCertificateNo && (
+                <Row label={t("BPA_OCCUPANCY_CERTIFICATE_NO")} text={bpa_details.occupancyCertificateNo} />
+              )}
+
             </StatusTable>
                     
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_AREA_MAPPING")}</CardSubHeader>
@@ -1134,13 +1138,15 @@ import {
                 text={areaMapping?.mouza || t("CS_NA")}
               />
             </StatusTable>
+        {propertyDetails && (
+          <>
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_PROPERTY_DETAILS")}</CardSubHeader>
             <StatusTable>
           <Row
             label={t("BPA_PROPERTY_ID")}
             text={bpa_details?.additionalDetails?.propertyID||"NA"}
           />
-          {propertyDetails && Object.entries(propertyDetails.details || {}).map(([key, value]) => (
+          {Object.entries(propertyDetails.details || {}).map(([key, value]) => (
             <Row
               key={key}
               label={t(`BPA_${key.toUpperCase()}`)}
@@ -1148,6 +1154,8 @@ import {
             />
           ))}
           </StatusTable>
+          </>
+        )}
   
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_APPLICANT_DETAILS")}</CardSubHeader>
             <StatusTable>
@@ -1272,7 +1280,7 @@ import {
             <StatusTable>
              <Row
                 label={t("BPA_CONSTRUCTION_TYPE")}
-                text={t(additionalDetails?.constructionType) || t("CS_NA")}
+                text={t(bpa_details?.applicationType) || t("CS_NA")}
               />
               <Row
                 label={t("BPA_OLD_DAG_NUMBER")}
@@ -1479,7 +1487,9 @@ import {
               </div>
               </>
             )}
-            {nocSearchResult?.Noc?.some(noc => noc.applicationStatus === "INPROGRESS") && (
+            {nocSearchResult?.Noc?.some(
+              (noc) => noc.applicationStatus === "INPROGRESS" && noc.nocType === "FIRE_SAFETY"
+            ) && (
              <StatusTable style={{ marginTop: "16px" }}>
               <Accordion
                 title={t("NOC_VALIDATION")}

@@ -52,18 +52,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Transient;
-
-import org.egov.common.entity.bpa.SubOccupancy;
-import org.egov.common.entity.bpa.Usage;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /*All the details extracted from the plan are referred in this object*/
@@ -71,64 +63,101 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class PlanBpa implements Serializable {
 
     private static final long serialVersionUID = 7276648029097296311L;
+    private VirtualBuildingDTO virtualBuilding = new VirtualBuildingDTO();
 
-    /**
-     * Plan scrutiny report status. Values true mean "Accepted" and False mean "Not Accepted". Default value false. On plan
-     * scrutiny, if all the rules are success then value is true.
-     */
-    Map<String, String> planInfoProperties = new HashMap<>();
-
-    private Boolean edcrPassed = false;
-    // Submission date of plan scrutiny.
-    private Date applicationDate;
-    /**
-     * decides on what date scrutiny should be done
-     */
-    private Date asOnDate;
-    private Plot plot;
+    private PlotDTO plot;
 
     /**
      * Planinformation captures the declarations of the plan.Plan information captures the boundary, building location
      * details,surrounding building NOC's etc. User will assert the details about the plot. The same will be used to print in plan
      * report.
      */
-    private PlanInformation planInformation;
+    private PlanInformationDTO planInformation;
+    
+    Map<String, String> planInfoProperties = new HashMap<>();
  
 
     // Single plan contain multiple block/building information. Records Existing and proposed block information.
-    private List<Block> blocks = new ArrayList<>();
+    private List<BlockDTO> blocks = new ArrayList<>();
+    
+    private FarDetailsDTO farDetails;
+    
+    private BigDecimal totalKitchens = BigDecimal.ZERO;
+    private BigDecimal totalBathrooms = BigDecimal.ZERO;
+    private BigDecimal totalLatrines = BigDecimal.ZERO;
+    private BigDecimal totalUrinals = BigDecimal.ZERO;
+    private transient List<ElectricLine> electricLine = new ArrayList<>();
+    private BigDecimal coverage = BigDecimal.ZERO;
+    private ReportOutput reportOutput = new ReportOutput();
 
-    private String tenantId;
-   
-    // List of occupancies present in the plot including all the blocks.
-    private List<Occupancy> occupancies = new ArrayList<>();
-    @JsonIgnore
-    private transient Map<Integer, org.egov.common.entity.bpa.Occupancy> occupanciesMaster = new HashMap<>();
-    @JsonIgnore
-    private transient Map<Integer, SubOccupancy> subOccupanciesMaster = new HashMap<>();
-
-    // coverage Overall Coverage of all the block. Total area of all the floor/plot area.
-   
-   
-
-    public List<Occupancy> getOccupancies() {
-        return occupancies;
+   public ReportOutput getReportOutput() {
+        return reportOutput;
     }
 
-    public void setOccupancies(List<Occupancy> occupancies) {
-        this.occupancies = occupancies;
+    public void setReportOutput(ReportOutput reportOutput) {
+        this.reportOutput = reportOutput;
+    }
+    
+    public List<ElectricLine> getElectricLine() {
+        return electricLine;
     }
 
-    public List<Block> getBlocks() {
+    public void setElectricLine(List<ElectricLine> electricLine) {
+        this.electricLine = electricLine;
+    }
+
+
+ public BigDecimal getTotalKitchens() {
+        return totalKitchens;
+    }
+
+    public void setTotalKitchens(BigDecimal totalKitchens) {
+        this.totalKitchens = totalKitchens;
+    }
+
+    public BigDecimal getTotalBathrooms() {
+        return totalBathrooms;
+    }
+
+    public void setTotalBathrooms(BigDecimal totalBathrooms) {
+        this.totalBathrooms = totalBathrooms;
+    }
+
+    public BigDecimal getTotalLatrines() {
+        return totalLatrines;
+    }
+
+    public void setTotalLatrines(BigDecimal totalLatrines) {
+        this.totalLatrines = totalLatrines;
+    }
+
+    public BigDecimal getTotalUrinals() {
+        return totalUrinals;
+    }
+
+    public void setTotalUrinals(BigDecimal totalUrinals) {
+        this.totalUrinals = totalUrinals;
+    }
+    
+	public FarDetailsDTO getFarDetails() {
+	    return farDetails;
+	}
+	
+	public void setFarDetails(FarDetailsDTO farDetails) {
+	    this.farDetails = farDetails;
+	}
+
+   
+    public List<BlockDTO> getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(List<Block> blocks) {
+    public void setBlocks(List<BlockDTO> blocks) {
         this.blocks = blocks;
     }
 
-    public Block getBlockByName(String blockName) {
-        for (Block block : getBlocks()) {
+    public BlockDTO getBlockByName(String blockName) {
+        for (BlockDTO block : getBlocks()) {
             if (block.getName().equalsIgnoreCase(blockName))
                 return block;
         }
@@ -136,81 +165,36 @@ public class PlanBpa implements Serializable {
     }
 
 
-    public Boolean getEdcrPassed() {
-        return edcrPassed;
-    }
-
-    public void setEdcrPassed(Boolean edcrPassed) {
-        this.edcrPassed = edcrPassed;
-    }
-
-    public Date getApplicationDate() {
-        return applicationDate;
-    }
-
-    public void setApplicationDate(Date applicationDate) {
-        this.applicationDate = applicationDate;
-    }
-
-   
-    public PlanInformation getPlanInformation() {
+    public PlanInformationDTO getPlanInformation() {
         return planInformation;
     }
 
-    public void setPlanInformation(PlanInformation planInformation) {
+    public void setPlanInformation(PlanInformationDTO planInformation) {
         this.planInformation = planInformation;
     }
 
-    public Plot getPlot() {
+    public PlotDTO getPlot() {
       
 		return plot;
     }
 
-    public void setPlot(Plot plot) {
+    public void setPlot(PlotDTO plot) {
         this.plot = plot;
     }
 
   
-   
+    public VirtualBuildingDTO getVirtualBuilding() {
+        return virtualBuilding;
+    }
+
+    public void setVirtualBuilding(VirtualBuildingDTO virtualBuilding) {
+        this.virtualBuilding = virtualBuilding;
+    }
     public void sortBlockByName() {
         if (!blocks.isEmpty())
-            Collections.sort(blocks, Comparator.comparing(Block::getNumber));
+            Collections.sort(blocks, Comparator.comparing(BlockDTO::getNumber));
     }
 
-    public void sortSetBacksByLevel() {
-        for (Block block : blocks)
-            Collections.sort(block.getSetBacks(), Comparator.comparing(SetBack::getLevel));
-    }
-
-   
-    public Map<Integer, org.egov.common.entity.bpa.Occupancy> getOccupanciesMaster() {
-        return occupanciesMaster;
-    }
-
-    public void setOccupanciesMaster(Map<Integer, org.egov.common.entity.bpa.Occupancy> occupanciesMaster) {
-        this.occupanciesMaster = occupanciesMaster;
-    }
-
-    public Map<Integer, SubOccupancy> getSubOccupanciesMaster() {
-        return subOccupanciesMaster;
-    }
-
-    public void setSubOccupanciesMaster(Map<Integer, SubOccupancy> subOccupanciesMaster) {
-        this.subOccupanciesMaster = subOccupanciesMaster;
-    }
-
- 
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-
-  
     public Map<String, String> getPlanInfoProperties() {
         return planInfoProperties;
     }
@@ -218,7 +202,13 @@ public class PlanBpa implements Serializable {
     public void setPlanInfoProperties(Map<String, String> planInfoProperties) {
         this.planInfoProperties = planInfoProperties;
     }
-
- 
     
+    public BigDecimal getCoverage() {
+        return coverage;
+    }
+
+    public void setCoverage(BigDecimal coverage) {
+        this.coverage = coverage;
+    }
+
 }

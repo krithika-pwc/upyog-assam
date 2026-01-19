@@ -76,7 +76,9 @@ public class EDCRService {
 		BPASearchCriteria criteria = new BPASearchCriteria();
 		criteria.setEdcrNumber(bpa.getEdcrNumber());
 		criteria.setTenantId(bpa.getTenantId());
-		List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
+		// Use full details for EDCR validation
+		// List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
+		List<BPA> bpas = bpaRepository.getBPADetailData(criteria, null);
 		if(bpas.size()>0){
 			for(int i=0; i<bpas.size(); i++){
 				if(!bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REJECTED) && !bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REVOCATED)){
@@ -147,7 +149,9 @@ public class EDCRService {
                     BPASearchCriteria ocCriteria = new BPASearchCriteria();
                     ocCriteria.setPermitNumber(permitNumber.get(0));
                     ocCriteria.setTenantId(bpa.getTenantId());
-                    List<BPA> ocApplns = bpaRepository.getBPAData(ocCriteria, null);
+                    // Use full details for OC validation
+                    // List<BPA> ocApplns = bpaRepository.getBPAData(ocCriteria, null);
+                    List<BPA> ocApplns = bpaRepository.getBPADetailData(ocCriteria, null);
                     if (!ocApplns.isEmpty()) {
                         for (int i = 0; i < ocApplns.size(); i++) {
                             if (!ocApplns.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REJECTED)) {
@@ -430,9 +434,28 @@ public class EDCRService {
 			materialType.add("");
 		}
 
+		List<Double> premiumFarArea =
+		        context.read("edcrDetail.*.planDetail.farDetails.buitUpAreaUnderPremiumFar");
+		
+		List<String> subOccupancy =
+	            context.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.subtype.name");
+
+		BigDecimal premiumBuiltUpArea =
+		        (premiumFarArea != null && !premiumFarArea.isEmpty())
+		                ? BigDecimal.valueOf(premiumFarArea.get(0).doubleValue())
+		                : BigDecimal.ZERO;
+		    
+		    String subOccupancyType =
+		            (subOccupancy != null && !subOccupancy.isEmpty())
+		                    ? subOccupancy.get(0).toUpperCase()
+		                    : "";
+
+
+		edcrDetails.put(BPAConstants.PREMIUMFARAREA, premiumBuiltUpArea);
 		edcrDetails.put(BPAConstants.FLOOR, floors);
 		edcrDetails.put(BPAConstants.APPLICATIONTYPE, occupancy.get(0).toString().toUpperCase());
 		edcrDetails.put(BPAConstants.WALLTYPE, materialType.get(0).toString().toUpperCase());
+		edcrDetails.put(BPAConstants.SUB_OCCUPANCY, subOccupancyType);
 		
 		return edcrDetails;
 	}

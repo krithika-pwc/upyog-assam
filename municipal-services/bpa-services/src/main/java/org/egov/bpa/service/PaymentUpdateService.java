@@ -92,7 +92,9 @@ public class PaymentUpdateService {
 							+ paymentDetail.getBusinessService());
 					log.info("Fetching BPA for Consumer Code: "
 							+ paymentDetail.getBill().getConsumerCode());
-					List<BPA> bpas = repository.getBPAData(searchCriteria, null);
+					// Use full details for payment update flow
+					// List<BPA> bpas = repository.getBPAData(searchCriteria, null);
+					List<BPA> bpas = repository.getBPADetailData(searchCriteria, null);
 					if (CollectionUtils.isEmpty(bpas)) {
 						throw new CustomException(BPAErrorConstants.INVALID_RECEIPT,
 								"No Building Plan Application found for the comsumerCode "
@@ -120,7 +122,12 @@ public class PaymentUpdateService {
 
 					//TODO: generate aproval no and validity i9n this lateral stage
 				//	enrichmentService.postStatusEnrichment(updateRequest);
-
+					/*
+					 * Generating permit no if the status is FORWARDED_TO_TECHNICAL_ENGINEER_MB
+					 * or FORWARDED_TO_TECHNICAL_ENGINEER_GP or FORWARDED_TO_ZONAL_OFFICER
+					 * or APPLICATION_COMPLETED
+					 */
+					enrichmentService.enrichPermitNumbers(updateRequest);
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */

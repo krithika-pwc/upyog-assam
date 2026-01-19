@@ -1,10 +1,7 @@
 package org.egov.domain.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.egov.domain.exception.UserAlreadyExistInSystemException;
-import org.egov.domain.exception.UserMobileNumberNotFoundException;
-import org.egov.domain.exception.UserNotExistingInSystemException;
-import org.egov.domain.exception.UserNotFoundException;
+import org.egov.domain.exception.*;
 import org.egov.domain.model.OtpRequest;
 import org.egov.domain.model.User;
 import org.egov.persistence.repository.OtpEmailRepository;
@@ -13,6 +10,11 @@ import org.egov.persistence.repository.OtpSMSRepository;
 import org.egov.persistence.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -47,8 +49,24 @@ public class OtpService {
 
         if (otpRequest.isRegistrationRequestType() && null != matchingUser)
             throw new UserAlreadyExistInSystemException();
-        else if (otpRequest.isLoginRequestType() && null == matchingUser)
+        else if (otpRequest.isLoginRequestType() && null == matchingUser){
+            if(Boolean.TRUE.equals(otpRequest.getRtpLogin())) {
+                log.info("RTP Login Failed as user is not registered in the system for mobile number: " + otpRequest.getMobileNumber());
+                throw new RTPNotFoundException("INVALID_RTP_LOGIN", "RTP Login Failed as user is not registered in the system");
+            }
             throw new UserNotExistingInSystemException();
+        }
+
+        if(Boolean.TRUE.equals(otpRequest.getRtpLogin()) && otpRequest.isLoginRequestType() && matchingUser != null){
+            List<String> roles = Arrays.asList("BPA_ARCHITECT","BPA_BUILDER","BPA_ENGINEER","BPA_STRUCTURALENGINEER",
+            "BPA_TOWNPLANNER","BPA_SUPERVISOR","BPA_GEO_TECH_ENGINEER","BPA_CIVIL_ENGINEER","BPA_UTILITY_ENGINEER",
+            "BPA_LANDSCAPE_ARCHITECT","BPA_GROUP_AGENCY","BPA_URBAN_DESIGNER","BPA_RTP");
+
+            if(CollectionUtils.isEmpty(matchingUser.getRoles()) || (matchingUser.getRoles().stream().noneMatch(role -> roles.contains(role.getCode())))){
+                log.info("RTP Login Failed as user does not have required role for mobile number: " + otpRequest.getMobileNumber());
+                throw new RTPNotFoundException("INVALID_RTP_LOGIN", "RTP Login Failed as user does not have required role");
+            }
+        }
 
         final String otpNumber = otpRepository.fetchOtp(otpRequest);
         otpSMSSender.send(otpRequest, otpNumber);

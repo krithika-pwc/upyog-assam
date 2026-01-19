@@ -322,11 +322,11 @@ export const convertEpochToDate = (dateEpoch) => {
       } catch (error) {}
     };  
   const getBuildingPermitOrder = async () => {
-    let applicationNo =  data?.[0]?.applicationNo;
+    const applicationNo =consumerCode;
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
-    let fileStoreId = application?.bpFileStoreId;
+    let fileStoreId =application?.signedBpFileStoreId ||  application?.bpFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
     let edcrDetail = edcrResponse?.edcrDetail?.[0];
     const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -362,11 +362,11 @@ export const convertEpochToDate = (dateEpoch) => {
   };
 
   const getPlanningPermitOrder = async () => {
-    let applicationNo =  data?.[0]?.applicationNo;
+    const applicationNo =consumerCode;
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
-    let fileStoreId = application?.ppFileStoreId;
+    let fileStoreId =application?.signedPpFileStoreId || application?.ppFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
     let edcrDetail = edcrResponse?.edcrDetail?.[0];
     const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -397,11 +397,11 @@ export const convertEpochToDate = (dateEpoch) => {
 
   // Occupancy Certificate Download
   const getBuildingOccupancy = async () => {
-    let applicationNo =  data?.[0]?.applicationNo;
+    const applicationNo =consumerCode;
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
-    let fileStoreId = application?.ocFileStoreId;
+    let fileStoreId =application?.signedOcFileStoreId || application?.ocFileStoreId;
     if (!fileStoreId) {
       let currentDate = new Date();
       let bpaResponse = await Digit.OBPSV2Services.search({

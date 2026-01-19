@@ -75,9 +75,9 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   // Construction Type
   const [constructionType, setConstructionType] = useState(
     landData?.constructionType || 
-    (searchResult?.additionalDetails?.constructionType ? {
-      "code": searchResult?.additionalDetails?.constructionType,
-      "i18nKey": searchResult?.additionalDetails?.constructionType
+    (searchResult?.applicationType ? {
+      "code": searchResult?.applicationType,
+      "i18nKey": searchResult?.applicationType
     } : "") || 
     ""
   );  
@@ -309,14 +309,14 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_OLD_DAG_NUMBER")}`}</CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="oldDagNumber"
             placeholder={t("BPA_ENTER_OLD_DAG_NUMBER")}
             value={oldDagNumber}
             // onChange={(e) => setOldDagNumber(e.target.value)}
             onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
               if (/^\d{0,6}$/.test(value)) {
                 setOldDagNumber(value);
               }
@@ -329,14 +329,14 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_NEW_DAG_NUMBER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="newDagNumber"
             placeholder={t("BPA_ENTER_NEW_DAG_NUMBER")}
             value={newDagNumber}
             // onChange={(e) => setNewDagNumber(e.target.value)}
             onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
               if (/^\d{0,6}$/.test(value)) {
                 setNewDagNumber(value);
               }
@@ -349,14 +349,14 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_OLD_PATTA_NUMBER")}`}</CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="oldPattaNumber"
             placeholder={t("BPA_ENTER_OLD_PATTA_NUMBER")}
             value={oldPattaNumber}
             // onChange={(e) => setOldPattaNumber(e.target.value)}
             onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
               if (/^\d{0,6}$/.test(value)) {
                 setOldPattaNumber(value);
               }
@@ -369,14 +369,14 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_NEW_PATTA_NUMBER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="newPattaNumber"
             placeholder={t("BPA_ENTER_NEW_PATTA_NUMBER")}
             value={newPattaNumber}
             // onChange={(e) => setNewPattaNumber(e.target.value)}
              onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
               if (/^\d{0,6}$/.test(value)) {
                 setNewPattaNumber(value);
               }
@@ -516,6 +516,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             optionKey="i18nKey"
             select={setRtpCategory}
             placeholder={t("BPA_SELECT_RTP_CATEGORY")}
+            disable={searchResult?.rtpDetails?.rtpCategory ? true : false}
           />
 
           {/* Registered Technical Person */}

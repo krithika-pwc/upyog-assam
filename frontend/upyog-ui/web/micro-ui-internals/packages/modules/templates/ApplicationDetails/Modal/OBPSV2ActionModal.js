@@ -96,6 +96,15 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     return inspectionOb;
   };
 
+  const getChiecklistQuestions = ()=>{
+    let checklistQuestion = [];
+    const newData = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
+    if(newData){
+      checklistQuestion.push(newData.siteInspectionQuestions)
+    }
+    return checklistQuestion;
+  }
+
   const getDocuments = (applicationData) => {
     let documentsformdata = JSON.parse(sessionStorage.getItem("OBPS_DOCUMENTS"));
     let documentList = [];
@@ -120,10 +129,12 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }
 
   async function submit(data) {
+    if (action?.action === "SUBMIT_REPORT") {
     const storedData = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA")) || {};
     const submitReport = getSubmitReport(applicationData);
     const nocList = storedData.nocList || [];
     const nocDetails = storedData.nocDetails || {};
+    const getCheckList = getChiecklistQuestions();
 
     if(!nocList.includes("CIVIL_AVIATION")){
       // AAI_NOC_DETAILS contains details related to Civil Aviation NOC and if not selected by the user, it is removed here from nocDetails
@@ -138,15 +149,33 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       additionalDetails: {
         ...applicationData?.additionalDetails,
         submitReportinspection_pending: submitReport,
+        inspectionChecklist: getCheckList,
         nocDetails: nocDetails,
-        pendingapproval: getPendingApprovals()
+        pendingapproval: getPendingApprovals(),
+         adjoiningOwners: {
+            ...applicationData?.additionalDetails?.adjoiningOwners,
+
+            north:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.north ??
+              applicationData?.additionalDetails?.adjoiningOwners?.north,
+
+            south:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.south ??
+              applicationData?.additionalDetails?.adjoiningOwners?.south,
+
+            east:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.east ??
+              applicationData?.additionalDetails?.adjoiningOwners?.east,
+
+            west:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.west ??
+              applicationData?.additionalDetails?.adjoiningOwners?.west,
+          }
       },
        workflow:{
         action: action?.action,
         comment: data?.comments?.length > 0 ? data?.comments : null,
-        comments: data?.comments?.length > 0 ? data?.comments : null,
-        assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
-        assignes: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+        assignes: (["SEND_BACK_TO_RTP"].includes(action?.action) && applicationData?.status === "PENDING_DA_ENGINEER") ? [applicationData?.rtpDetails?.rtpUUID] : null,
         varificationDocuments: uploadedFile
         ? [
           {
@@ -155,21 +184,28 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
             fileStoreId: uploadedFile,
           },
         ]
-        : null,
-      },
-      action: action?.action,
-      comment: data?.comments,
-      assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
-      wfDocuments: uploadedFile
-        ? [
-          {
-            documentType: action?.action + " DOC",
-            fileName: file?.name,
-            fileStoreId: uploadedFile,
-          },
-        ]
-        : null,
+        : null
+      }
     };
+    } else {
+      applicationData = {
+        ...applicationData,
+        workflow:{
+          action: action?.action,
+          comment: data?.comments?.length > 0 ? data?.comments : null,
+          assignes: (["SEND_BACK_TO_RTP"].includes(action?.action) && applicationData?.status === "PENDING_DA_ENGINEER") ? [applicationData?.rtpDetails?.rtpUUID] : null,
+          varificationDocuments: uploadedFile
+          ? [
+            {
+              documentType: action?.action + " DOC",
+              fileName: file?.name,
+              fileStoreId: uploadedFile,
+            },
+          ]
+          : null
+        }
+      };
+    }
     submitAction({
       BPA:applicationData
     });
