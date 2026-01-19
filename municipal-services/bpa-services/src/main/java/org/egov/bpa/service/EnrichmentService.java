@@ -291,7 +291,8 @@ public class EnrichmentService {
 		List<String> planningPermitStatuses = Arrays.asList(
 				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB,
 				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP,
-				BPAConstants.FORWARDED_TO_ZONAL_OFFICER
+				BPAConstants.FORWARDED_TO_ZONAL_OFFICER,
+				BPAConstants.PENDING_DSC
 		);
 
 		if (planningPermitStatuses.contains(bpaRequest.getBPA().getStatus())) {
@@ -299,8 +300,12 @@ public class EnrichmentService {
 		}
 
 		if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())) {
-			updateBuildingPermitNo(bpaRequest);
+//			updateBuildingPermitNo(bpaRequest);
 			updateOccupancyCertificateNo(bpaRequest);
+		}
+		
+		if(BPAConstants.PENDING_FINAL_DSC.equals(bpaRequest.getBPA().getStatus())) {
+			updateBuildingPermitNo(bpaRequest);
 		}
 	}
 

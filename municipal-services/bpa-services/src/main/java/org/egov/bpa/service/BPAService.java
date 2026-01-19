@@ -555,6 +555,7 @@ public class BPAService {
             String status = bpaRequest.getBPA().getStatus();
             //generating permit number during Approval	
             enrichmentService.enrichPermitNumbers(bpaRequest);
+            repository.update(bpaRequest, BPAConstants.UPDATE);
             
             List<String> planningPermitCalculateFeeStatuses = Arrays.asList(
                    BPAConstants.PAYMENT_PENDING,
