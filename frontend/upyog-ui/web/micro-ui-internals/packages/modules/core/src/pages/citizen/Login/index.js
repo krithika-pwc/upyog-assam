@@ -237,7 +237,8 @@ const ePramaanRegister = async () => {
         if (window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
           info.tenantId = Digit.ULBService.getStateId();
         }
-
+        Digit.SessionStorage.set("isRTPLogin", isRtpLogin());
+        
         setUser({ info, ...tokens });
       } else if (!isUserRegistered) {
         const requestData = {

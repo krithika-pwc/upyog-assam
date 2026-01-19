@@ -62,6 +62,8 @@ const AreaMapping = () => {
     };
     
     Digit.SessionStorage.set("CITIZEN.AREA.MAPPING", areaMappingStep);
+     // Set citizen login flag (not RTP login)
+      Digit.SessionStorage.set("isRTPLogin", false);
     
     // Set the selected tenant
     if (concernedAuthority?.code) {
