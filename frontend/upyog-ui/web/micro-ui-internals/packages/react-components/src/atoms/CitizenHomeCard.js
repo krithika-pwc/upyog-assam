@@ -11,7 +11,14 @@ const CitizenHomeCard = ({ header, links = [], state, Icon, Info, isInfo = false
       link: item.link ? item.link.replace("digit-ui", "upyog-ui") : item.link
     }));
   }
-  const updatedData = replaceDigitUiWithUpyogUi(links);
+  let updatedData = replaceDigitUiWithUpyogUi(links);
+
+  // Filter out RTP registration link based on login type, if logged in as citizen hide the link else show it
+  const isRTPLogin = Digit.SessionStorage.get("isRTPLogin");
+  if (!isRTPLogin) {
+    updatedData = updatedData.filter(item => item.name !== "BPA_APPLY_FOR_REGISTER_AS_RTP");
+  }
+  
 //   function updateDisplayName(data, roles) {
 //     return data.map(item => {
 //         if (item.id === 3074) {

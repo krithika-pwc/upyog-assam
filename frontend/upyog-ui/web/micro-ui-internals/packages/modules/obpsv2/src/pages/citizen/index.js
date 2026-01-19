@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, Route } from "react-router-dom";
-import { PrivateRoute, BackButton } from "@upyog/digit-ui-react-components";
+import { PrivateRoute, BackButton,Toast } from "@upyog/digit-ui-react-components";
 import Inbox from "../employee/Inbox"
 import Search from "./Search";
 const App = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
+  const isRTPLogin = Digit.SessionStorage.get("isRTPLogin");
+
 
 
   const BPACreate= Digit?.ComponentRegistryService?.getComponent("BPACreate");
@@ -17,6 +19,21 @@ const App = ({ path }) => {
   const BPAEdit= Digit?.ComponentRegistryService?.getComponent("BPAEdit");
   const OBPASCitizenHomeScreen = Digit?.ComponentRegistryService?.getComponent("OBPASCitizenHomeScreen")
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
+
+  /* 
+  it will resterict  Architect to apply the building permit, only citizen can apply
+   if RTP wants to apply then he has to login as citizen
+   */
+  const RoleRestrictedBPACreate = (props) => {
+    if (isRTPLogin) {
+      return <Toast error={true} 
+      label={t("LOGIN_AS_CITIZEN_TO_APPLY_BPA")} 
+      isDleteBtn={true} 
+      onClose={() => window.location.replace("/upyog-ui/citizen/obpsv2-home")} />;
+    }
+    return <BPACreate {...props} />;
+  };
+
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
@@ -25,7 +42,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/rtp/home`} component={OBPASCitizenHomeScreen}/>
         <PrivateRoute path={`${path}/my-applications`} component={BPAMyApplications}></PrivateRoute>
         <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={BPAApplicationDetails}></PrivateRoute>
-        <PrivateRoute path={`${path}/building-permit`} component={BPACreate}/>
+        <PrivateRoute path={`${path}/building-permit`} component={RoleRestrictedBPACreate}/>
         <PrivateRoute path={`${path}/rtp/apply`} component={RTPCreate}/>
         <PrivateRoute path={`${path}/rtp/inbox`} component={(props) => <RTPInbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/rtp/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
