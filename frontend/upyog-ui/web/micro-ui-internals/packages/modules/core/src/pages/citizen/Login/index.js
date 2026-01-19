@@ -60,8 +60,9 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     }
   }, [history]);
 
+  // Function to determine if it's RTP login, based on URL path, check the path and if it includes '/rtp-login' returns true
    const isRtpLogin = () => {
-    return location.pathname.includes('/rtp-login') || location.pathname.includes('/rtp/');
+    return location.pathname.includes('/rtp-login');
   };
 
 
@@ -237,6 +238,7 @@ const ePramaanRegister = async () => {
         if (window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
           info.tenantId = Digit.ULBService.getStateId();
         }
+        //Set RTP login flag in session so that we determine the user type throughout the application and to prevent Architect from applying BPA
         Digit.SessionStorage.set("isRTPLogin", isRtpLogin());
         
         setUser({ info, ...tokens });
