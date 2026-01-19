@@ -295,7 +295,6 @@ public class EdcrApplicationService {
 
 // The below function is commented out temporarily as aspose-cad is commented out and run the service without using aspose-cad library
    
-	
     private void updateFile(Plan pl, EdcrApplication edcrApplication) {
 
         String filePath = edcrApplication.getSavedDxfFile().getAbsolutePath();
@@ -428,6 +427,7 @@ public class EdcrApplicationService {
     }
 
 
+
         @Transactional
     public EdcrApplication createRestEdcr(final EdcrApplication edcrApplication){
         String comparisonDcrNo = edcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
@@ -442,4 +442,6 @@ public class EdcrApplicationService {
         edcrIndexService.updateEdcrRestIndexes(edcrApplication, NEW_SCRTNY);
         return edcrApplication;
     }
+
 }
+
