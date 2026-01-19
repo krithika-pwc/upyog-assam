@@ -505,12 +505,6 @@ public class BPAService {
 		bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
 
 		String action = Optional.ofNullable(bpa.getWorkflow()).map(Workflow::getAction).orElse("");
-		boolean isRtpChanged = existingBPA.getRtpDetails() != null && bpa.getRtpDetails() != null
-				&& !Objects.equals(existingBPA.getRtpDetails().getRtpUUID(), bpa.getRtpDetails().getRtpUUID());
-
-		if (isRtpChanged) {
-			action = "RTP_IS_CHANGED";
-		}
 
 		switch (action.toUpperCase()) {
 
@@ -519,7 +513,7 @@ public class BPAService {
                 throw new CustomException(BPAErrorConstants.UNAUTHORIZED_UPDATE,
                         "RTP details can be updated by the citizen who created the application");
             }
-            actionValidator.validateActionForRTPUpdateWithoutWorkflowUpdate(bpaRequest, action);
+            actionValidator.validateActionForRTPUpdateWithoutWorkflowUpdate(bpaRequest);
 
 			reassignRTP(bpaRequest);
 			log.info("RTP details updated successfully without workflow for citizen application: {}",

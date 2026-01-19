@@ -381,8 +381,8 @@ public class BPAConfiguration {
 	  @Value("${egov.idgen.bpa.drawingNum.format}")
 	  private String drawingNoIdGenFormat;
 
-	  @Value("${rtp.reassign.action.allowed}")
-	  private String rtpReassignAction;
+	  @Value("${rtp.reassign.status.allowed}")
+	  private String rtpReassignStatusAllowed;
 
 	@Value("${service.retry.maxAttempts}")
 	private int maxAttempts;
