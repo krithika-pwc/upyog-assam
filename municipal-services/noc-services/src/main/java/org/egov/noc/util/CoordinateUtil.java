@@ -1,17 +1,14 @@
 package org.egov.noc.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.noc.web.model.Noc;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.Arrays;
-import java.util.List;
 
+@Slf4j
 @Component
 public class CoordinateUtil {
-
-    // List of direction keys to process
-    private static final List<String> DIRECTIONS = Arrays.asList("EAST", "WEST", "NORTH", "SOUTH", "CENTER");
 
     /**
      * Converts coordinates in additionalDetails from decimal to DMS format for AAI NOC.
@@ -24,7 +21,7 @@ public class CoordinateUtil {
 
         Map<String, Object> details = (Map<String, Object>) noc.getAdditionalDetails();
 
-        for (String direction : DIRECTIONS) {
+        for (String direction : NOCConstants.ALL_COORDINATE_KEYS) {
             Object dirObj = details.get(direction);
             if (dirObj instanceof Map) {
                 processCoordinateMap((Map<String, Object>) dirObj);
@@ -36,8 +33,8 @@ public class CoordinateUtil {
      * Processes the latitude and longitude within a specific direction map.
      */
     private void processCoordinateMap(Map<String, Object> coordMap) {
-        updateCoordinate(coordMap, "latitude");
-        updateCoordinate(coordMap, "longitude");
+        updateCoordinate(coordMap, NOCConstants.KEY_LAT);
+        updateCoordinate(coordMap, NOCConstants.KEY_LON);
     }
 
     private void updateCoordinate(Map<String, Object> map, String key) {
@@ -47,6 +44,7 @@ public class CoordinateUtil {
         String formatted = convertToDmsString(value);
         if (formatted != null) {
             map.put(key, formatted);
+            log.info(" Converted from [{}] to [{}]", key, formatted);
         }
     }
 

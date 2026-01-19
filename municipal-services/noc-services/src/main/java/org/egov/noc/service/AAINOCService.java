@@ -59,6 +59,9 @@ public class AAINOCService {
 	@Autowired
 	private FileStoreService fileStoreService;
 
+	@Autowired
+	private AAINOCValidationService aaiNOCValidationService;
+
 	/**
 	 * Generates NOCAS XML response by fetching newly created NOC applications
 	 * and their corresponding BPA details. Maps data to AAI NOCAS XML format.
@@ -77,10 +80,18 @@ public class AAINOCService {
 				return createEmptyResponse(config.getAuthorityName());
 			}
 
+			// Validate NOCs before fetching BPA details to avoid unnecessary service calls
+			nocList = aaiNOCValidationService.validateNOCs(nocList);
+			
+			if (CollectionUtils.isEmpty(nocList)) {
+				log.info("No valid AAI NOC applications found after validation");
+				return createEmptyResponse(config.getAuthorityName());
+			}
+			log.info("No. of valid NOC applications after validation: " + nocList.size());
 			RequestInfoWrapper requestInfoWrapper =	new RequestInfoWrapper();
 			requestInfoWrapper.setRequestInfo(requestInfo);
 
-			// Map NOC by sourceRefId for document lookup
+			// Map NOC by sourceRefId (which equals BPA applicationNo) for lookup
 			Map<String, Noc> nocMap = new HashMap<>();
 			for (Noc noc : nocList) {
 				if (noc != null && noc.getSourceRefId() != null) {
@@ -88,7 +99,7 @@ public class AAINOCService {
 				}
 			}
 
-			// Fetch BPA details for the NOC applications
+			// Fetch BPA details for the VALIDATED NOC applications only
 			List<BPA> bpaDetails = nocService.getBPADetails(nocList, requestInfoWrapper);
 			
 			Map<String, BPA> bpaMap = new HashMap<>();
@@ -103,7 +114,7 @@ public class AAINOCService {
 				try {
 					BpaApplication obj = mapBPAToBpaApplication(bpa);
 					if (obj != null) {
-						// Set corresponding NOC for document mapping
+						// Set corresponding NOC for document mapping (sourceRefId = applicationNo)
 						Noc correspondingNoc = nocMap.get(bpa.getApplicationNo());
 						obj.setNoc(correspondingNoc);
 						applications.add(obj);
