@@ -127,7 +127,7 @@ public class PaymentUpdateService {
 					 * or FORWARDED_TO_TECHNICAL_ENGINEER_GP or FORWARDED_TO_ZONAL_OFFICER
 					 * or APPLICATION_COMPLETED
 					 */
-					enrichmentService.enrichPermitNumbers(updateRequest);
+//					enrichmentService.enrichPermitNumbers(updateRequest);
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */

@@ -538,7 +538,7 @@ public class BPAService {
 			break;
 
 		case "PAY":// CITIZEN_FINAL_PAYMENT
-            enrichmentService.enrichPermitNumbers(bpaRequest);
+//            enrichmentService.enrichPermitNumbers(bpaRequest);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE);
@@ -553,7 +553,9 @@ public class BPAService {
 
         if ("APPROVE".equalsIgnoreCase(action)) {
             String status = bpaRequest.getBPA().getStatus();
-
+            //generating permit number during Approval	
+            enrichmentService.enrichPermitNumbers(bpaRequest);
+            
             List<String> planningPermitCalculateFeeStatuses = Arrays.asList(
                    BPAConstants.PAYMENT_PENDING,
                     BPAConstants.PENDING_DSC
