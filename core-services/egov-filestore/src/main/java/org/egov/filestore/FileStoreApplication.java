@@ -55,5 +55,4 @@ public class FileStoreApplication {
 
 		SpringApplication.run(FileStoreApplication.class, args);
 	}
-	
 }
