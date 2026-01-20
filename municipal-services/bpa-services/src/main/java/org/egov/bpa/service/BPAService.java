@@ -64,7 +64,7 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 public class BPAService {
 
 
-    @Autowired
+	@Autowired
     private WorkflowIntegrator wfIntegrator;
 
     @Autowired
@@ -538,7 +538,7 @@ public class BPAService {
 			break;
 
 		case "PAY":// CITIZEN_FINAL_PAYMENT
-            enrichmentService.enrichPermitNumbers(bpaRequest);
+            enrichmentService.enrichPermitNumbers(bpaRequest); 
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE);
@@ -553,7 +553,17 @@ public class BPAService {
 
         if ("APPROVE".equalsIgnoreCase(action)) {
             String status = bpaRequest.getBPA().getStatus();
+            
+            //TODO generating permit number during Approval by employee	
+			if ((status.equalsIgnoreCase(BPAConstants.PENDING_DSC)
+					|| status.equalsIgnoreCase(BPAConstants.PENDING_FINAL_DSC))
+					&& util.validateGmdaGmcBusinessService(bpaRequest.getBPA().getBusinessService())) {
 
+				enrichmentService.enrichPermitNumbers(bpaRequest);
+				repository.update(bpaRequest, BPAConstants.UPDATE);
+
+			}
+            
             List<String> planningPermitCalculateFeeStatuses = Arrays.asList(
                    BPAConstants.PAYMENT_PENDING,
                     BPAConstants.PENDING_DSC
