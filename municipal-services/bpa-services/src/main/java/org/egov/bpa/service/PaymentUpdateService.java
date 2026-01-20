@@ -9,6 +9,7 @@ import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
+import org.egov.bpa.util.BPAUtil;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
@@ -34,8 +35,6 @@ import static org.egov.bpa.util.BPAConstants.TENANTID_MDC_STRING;
 @Slf4j
 public class PaymentUpdateService {
 
-	public static final String BPA_GMDA_GMC = "BPA_GMDA_GMC";
-
 	private BPAConfiguration config;
 
 	private BPARepository repository;
@@ -45,6 +44,9 @@ public class PaymentUpdateService {
 	private EnrichmentService enrichmentService;
 
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private BPAUtil util;
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
@@ -131,7 +133,7 @@ public class PaymentUpdateService {
 					 */
 					
 					//TODO need to remove this once DSC is configured for all the workflows
-					if (!updateRequest.getBPA().getBusinessService().equals(BPA_GMDA_GMC)) {
+					if (!util.validateGmdaGmcBusinessService(updateRequest.getBPA().getBusinessService())) {
 						enrichmentService.enrichPermitNumbers(updateRequest);
 					}
 					/*

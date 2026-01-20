@@ -64,8 +64,6 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 public class BPAService {
 
 
-    public static final String BPA_GMDA_GMC = "BPA_GMDA_GMC";
-
 	@Autowired
     private WorkflowIntegrator wfIntegrator;
 
@@ -559,7 +557,7 @@ public class BPAService {
             //TODO generating permit number during Approval by employee	
 			if ((status.equalsIgnoreCase(BPAConstants.PENDING_DSC)
 					|| status.equalsIgnoreCase(BPAConstants.PENDING_FINAL_DSC))
-					&& bpaRequest.getBPA().getBusinessService().equals(BPA_GMDA_GMC)) {
+					&& util.validateGmdaGmcBusinessService(bpaRequest.getBPA().getBusinessService())) {
 
 				enrichmentService.enrichPermitNumbers(bpaRequest);
 				repository.update(bpaRequest, BPAConstants.UPDATE);
