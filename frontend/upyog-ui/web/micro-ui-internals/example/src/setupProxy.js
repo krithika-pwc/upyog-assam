@@ -75,7 +75,14 @@ module.exports = function (app) {
     "/gis-service/find-zone",
     "/bpa-services/v1/bpa/_rtpsearch",
     "/gis-service/zone/_search",
-    "/noc-services/v1/noc/_validate"
+    "/noc-services/v1/noc/_validate",
+    "/dsc-services/dsc/_getTokenInput",
+    "/dsc-services/dsc/_getTokens",
+    "/dsc-services/dsc/_getInputCertificate",
+    "/dsc-services/dsc/_getCertificate",
+    "/filestore/v1/files/metadata",
+    "/dsc-services/dsc/_pdfSignInput",
+    "/dsc-services/dsc/_pdfSign",
 
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
