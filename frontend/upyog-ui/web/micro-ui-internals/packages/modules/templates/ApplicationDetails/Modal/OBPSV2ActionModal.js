@@ -98,10 +98,10 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   const getSubmitReport = (data) => {
     let inspectionOb = [];
-      const formdata = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
-        if (formdata) {
-          inspectionOb.push(formdata.submitReport);
-        }
+    const formdata = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
+    if (formdata) {
+        inspectionOb.push(formdata.submitReport);
+      }
     return inspectionOb;
   };
 
