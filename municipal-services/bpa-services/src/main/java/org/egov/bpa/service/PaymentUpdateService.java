@@ -34,6 +34,8 @@ import static org.egov.bpa.util.BPAConstants.TENANTID_MDC_STRING;
 @Slf4j
 public class PaymentUpdateService {
 
+	public static final String BPA_GMDA_GMC = "BPA_GMDA_GMC";
+
 	private BPAConfiguration config;
 
 	private BPARepository repository;
@@ -127,7 +129,11 @@ public class PaymentUpdateService {
 					 * or FORWARDED_TO_TECHNICAL_ENGINEER_GP or FORWARDED_TO_ZONAL_OFFICER
 					 * or APPLICATION_COMPLETED
 					 */
-//					enrichmentService.enrichPermitNumbers(updateRequest);
+					
+					//TODO need to remove this once DSC is configured for all the workflows
+					if (!updateRequest.getBPA().getBusinessService().equals(BPA_GMDA_GMC)) {
+						enrichmentService.enrichPermitNumbers(updateRequest);
+					}
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */

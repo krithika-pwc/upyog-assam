@@ -42,6 +42,8 @@ import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 @Slf4j
 public class EnrichmentService {
 
+	public static final String BPA_GMDA_GMC = "BPA_GMDA_GMC";
+
 	@Autowired
 	private BPAConfiguration config;
 
@@ -291,7 +293,6 @@ public class EnrichmentService {
 		List<String> planningPermitStatuses = Arrays.asList(
 				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB,
 				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP,
-				BPAConstants.FORWARDED_TO_ZONAL_OFFICER,
 				BPAConstants.PENDING_DSC
 		);
 
@@ -299,8 +300,10 @@ public class EnrichmentService {
 			updatePlanningPermitNo(bpaRequest);
 		}
 
-		if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())) {
-//			updateBuildingPermitNo(bpaRequest);
+		//TODO: one dsc integrated for all workflows, need to modify the code and condition
+		if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())
+				&& !bpaRequest.getBPA().getBusinessService().equals(BPA_GMDA_GMC)) {
+			updateBuildingPermitNo(bpaRequest); 
 			updateOccupancyCertificateNo(bpaRequest);
 		}
 		
