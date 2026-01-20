@@ -40,36 +40,6 @@ public class EPramaanRequestController {
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
 
-    @RequestMapping(value = {"/authorization/url/citizen"}, method = RequestMethod.POST)
-    public ResponseEntity<AuthResponse> searchForcitizen(@Valid @RequestBody RequestInfo requestInfo, @RequestParam("module") String module) throws NoSuchAlgorithmException {
-        AuthResponse authResponse = new AuthResponse();
-        URI redirectionURL = null;
-        try {
-            redirectionURL = ePramaanRequestService.getCitizenRedirectionURL(module, authResponse);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        authResponse.setRedirectURL(redirectionURL.toString());
-        log.info("Redirection URL" + redirectionURL.toString());
-        return new ResponseEntity<>(authResponse, HttpStatus.OK);
-    }
-
-
-    @RequestMapping(value = "/token", method = RequestMethod.POST)
-    public ResponseEntity<EPramaanTokenResponse>  getToken(@Valid @RequestBody TokenRequest tokenRequest)    {
-
-        EPramaanTokenRes tokenRes= null;
-        try {
-            tokenRes = ePramaanRequestService.getToken(tokenRequest.getTokenReq());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        ResponseInfo responseInfo=ResponseInfoFactory.createResponseInfoFromRequestInfo(tokenRequest.getRequestInfo(), null);
-        EPramaanTokenResponse tokenResponse=EPramaanTokenResponse.builder().responseInfo(responseInfo).tokenRes(tokenRes).build();
-
-        return new ResponseEntity<>(tokenResponse,HttpStatus.OK);
-    }
-
     @RequestMapping(value = "/token/citizen", method = RequestMethod.POST)
     public ResponseEntity<Object>  getTokenCitizen(@Valid @RequestBody TokenRequest tokenRequest)    {
 
@@ -83,24 +53,6 @@ public class EPramaanRequestController {
         log.info("Enhanced OAuth response with ePramaan session info: {}", enhancedResponse.toString());
 
         return new ResponseEntity<>(enhancedResponse, HttpStatus.OK);
-    }
-
-
-    @RequestMapping(value = "/details", method = RequestMethod.POST)
-    public ResponseEntity<TokenResponse> getDetails(@Valid @RequestBody TokenRequest tokenRequest) {
-        UserRes userRes = ePramaanRequestService.getUser(tokenRequest.getTokenReq());
-        ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(tokenRequest.getRequestInfo(), null);
-        TokenResponse tokenResponse = TokenResponse.builder().responseInfo(responseInfo).tokenRes(null).userRes(userRes).build();
-        return new ResponseEntity<>(tokenResponse, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/callback", method = RequestMethod.POST)
-    public ResponseEntity<Object> eparmaanCallback(@Valid @RequestBody EparmaanRequest eparmaanRequest) {
-
-        log.info("Eparmaan Callback Request Received: " + eparmaanRequest);
-
-        Object user = ePramaanRequestService.getToken(eparmaanRequest);
-        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     /**
