@@ -104,8 +104,10 @@ public class NOCStatusUpdateService {
         }
         
         if (NOCConstants.AAI_STATUS_INPROCESS.equalsIgnoreCase(aaiStatusValue)) {
-            log.info("NOC {} is INPROCESS - updating additionalDetails and nocNo", uniqueId);
+            log.info("NOC {} is INPROCESS - updating applicationStatus to INPROCESS, additionalDetails and nocNo", uniqueId);
             updateAdditionalDetailsFromAAI(existingNoc, aaiStatus);
+            // Update applicationStatus to INPROCESS
+            existingNoc.setApplicationStatus(NOCConstants.AAI_STATUS_INPROCESS);  
             NocRequest nocRequest = NocRequest.builder()
                     .noc(existingNoc)
                     .requestInfo(requestInfo)
@@ -172,7 +174,7 @@ public class NOCStatusUpdateService {
                             existingNoc.getId(), aaiStatus.getFileName());
                 }
             } catch (Exception e) {
-                log.error("Failed to add AAI document for NOC {}", existingNoc.getId(), e);
+                log.error("Failed to save AAI document for NOC {}", existingNoc.getId(), e);
             }
         }
         
