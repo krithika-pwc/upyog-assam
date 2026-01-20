@@ -3,14 +3,7 @@ package org.egov.bpa.service;
 import static org.egov.bpa.util.BPAConstants.INPROGRESS_STATUS;
 import static org.egov.bpa.util.BPAConstants.ACTION_INITIATE;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
@@ -104,7 +97,7 @@ public class NocService {
 
 		// CREATE NOCs
 		String applType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
-		createNOCList(bpaRequest, nocTypes, applType);
+		createNOCList(bpaRequest, nocTypes, applType, permitType);
 
 		//Removing NOC details from bpa additional details
 		if (bpa.getAdditionalDetails() instanceof Map) {
@@ -124,12 +117,70 @@ public class NocService {
 	 * @param nocTypes   List of applicable NOC types to be created.
 	 * @param applType   Application type derived from EDCR, used to determine NOC
 	 *                   source.
+	 * @param permitType Permit type (Building Permit or Planning Permit) to differentiate FIRE_SAFETY NOCs.
 	 */
-	private void createNOCList(BPARequest bpaRequest, List<String> nocTypes, String applType) {
+	@SuppressWarnings("unchecked")
+	private void createNOCList(BPARequest bpaRequest, List<String> nocTypes, String applType, String permitType) {
 
-		List<Noc> nocs = new ArrayList<>();
 		String tenantId = bpaRequest.getBPA().getTenantId();
 		String applicationNo = bpaRequest.getBPA().getApplicationNo();
+		
+		// Fetch existing NOCs to avoid duplicates
+		List<Noc> existingNocs = fetchNocRecords(bpaRequest);
+		
+		// For FIRE_SAFETY, create a set of nocType+permitType combinations
+		// For other NOC types, use just nocType
+		final Set<String> existingNocKeys = new HashSet<>();
+		if (!CollectionUtils.isEmpty(existingNocs)) {
+			for (Noc existingNoc : existingNocs) {
+				String nocType = existingNoc.getNocType();
+				if (nocType == null) continue;
+				
+				if ("FIRE_SAFETY".equals(nocType)) {
+					// For FIRE_SAFETY, check permitType from additionalDetails
+					String existingPermitType = extractPermitTypeFromNoc(existingNoc);
+					if (existingPermitType != null) {
+						existingNocKeys.add(nocType + ":" + existingPermitType);
+					} else {
+						existingNocKeys.add(nocType);
+					}
+				} else {
+					// For other NOC types, use just nocType
+					existingNocKeys.add(nocType);
+				}
+			}
+			log.info("Existing NOC keys for application {}: {}", applicationNo, existingNocKeys);
+		}
+		
+		// Filter out NOC types that already exist
+		// For FIRE_SAFETY, check both nocType and permitType combination
+		// For other NOC types, check only nocType
+		List<String> newNocTypes = new ArrayList<>();
+		for (String nocType : nocTypes) {
+			boolean shouldCreate = false;
+			if ("FIRE_SAFETY".equals(nocType)) {
+				// For FIRE_SAFETY, check if this permitType combination already exists
+				String key = nocType + ":" + permitType;
+				shouldCreate = !existingNocKeys.contains(key);
+			} else {
+				// For other NOC types, check if nocType already exists
+				shouldCreate = !existingNocKeys.contains(nocType);
+			}
+			
+			if (shouldCreate) {
+				newNocTypes.add(nocType);
+			}
+		}
+		
+		if (newNocTypes.isEmpty()) {
+			log.info("All NOC types already exist for application {}. Skipping NOC creation.", applicationNo);
+			return;
+		}
+		
+		log.info("New NOC types to be created for application {}: {} (Filtered from: {})", 
+				applicationNo, newNocTypes, nocTypes);
+
+		List<Noc> nocs = new ArrayList<>();
 		ApplicationType applicationType = ApplicationType.valueOf(BPAConstants.NOC_APPLICATIONTYPE);
 		String source = config.getNocSourceConfig().get(applType);
 		Workflow workflow = Workflow.builder().action(ACTION_INITIATE).build();
@@ -160,23 +211,23 @@ public class NocService {
 
 		}
 		log.info("nocAdditionalDetails : " + nocAdditionalDetails);
-		log.info("Applicable NOCs are, " + nocTypes);
 
-		for (String nocType : nocTypes) {
+		for (String nocType : newNocTypes) {
 			List<Document> documents = docMap.get(nocType);
+			Map<String, Object> additionalDetailsForNoc = new HashMap<>();
 
-			// Sets additionalDetails only in case of Civil Aviation
+			// Sets additionalDetails for Civil Aviation
 			if(nocType.equals("CIVIL_AVIATION")) {
-				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
-						.nocType(nocType).source(source).workflow(workflow).documents(documents)
-						.additionalDetails(nocAdditionalDetails).build();
-				nocs.add(noc);
-			} else {
-				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
-						.nocType(nocType).source(source).workflow(workflow).documents(documents)
-						.additionalDetails(new HashMap<>()).build(); // AdditionalDetails is set as empty hashmap, because noc service needs an additionaldetails object
-				nocs.add(noc);
+				additionalDetailsForNoc.putAll(nocAdditionalDetails);
 			}
+			
+			// Add permitType to additionalDetails for all NOC types
+			additionalDetailsForNoc.put("permitType", permitType);
+
+			Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+					.nocType(nocType).source(source).workflow(workflow).documents(documents)
+					.additionalDetails(additionalDetailsForNoc).build();
+			nocs.add(noc);
 		}
 
 		//TODO: Added this FIRE NOC for testing will remove once testing is done
@@ -353,6 +404,28 @@ public class NocService {
 		uri.append("&sourceRefId=");
 		uri.append(bpaRequest.getBPA().getApplicationNo());
 		return uri;
+	}
+
+	/**
+	 * Extracts permitType from NOC's additionalDetails
+	 * @param noc NOC object
+	 * @return permitType string or null if not found
+	 */
+	@SuppressWarnings("unchecked")
+	private String extractPermitTypeFromNoc(Noc noc) {
+		if (noc == null || noc.getAdditionalDetails() == null) {
+			return null;
+		}
+		
+		if (noc.getAdditionalDetails() instanceof Map) {
+			Map<String, Object> additionalDetails = (Map<String, Object>) noc.getAdditionalDetails();
+			Object permitTypeObj = additionalDetails.get("permitType");
+			if (permitTypeObj instanceof String) {
+				return (String) permitTypeObj;
+			}
+		}
+		
+		return null;
 	}
 
 }
