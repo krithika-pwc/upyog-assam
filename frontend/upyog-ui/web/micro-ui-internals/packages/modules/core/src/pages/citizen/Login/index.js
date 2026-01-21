@@ -54,7 +54,7 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
   const [canSubmitNo, setCanSubmitNo] = useState(true);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
-  // it will determine the the is existing or not and if existing then normal citizen or RTP user
+  // it will determine if user is existing or not and if existing then normal citizen or RTP user
 useEffect(() => {
   const existingUser = Digit.UserService.getUser();
   const currentTenant = Digit.ULBService.getCitizenCurrentTenant(true);
