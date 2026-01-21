@@ -7,6 +7,9 @@ import Search from "./Search";
 const App = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
+  const isRTPLogin = Digit.SessionStorage.get("isRTPLogin");
+
+
 
 
 
@@ -23,7 +26,7 @@ const App = ({ path }) => {
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
-       {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+       {!isRTPLogin && !location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
         <PrivateRoute path={`${path}/rtp/home`} component={OBPASCitizenHomeScreen}/>
         <PrivateRoute path={`${path}/my-applications`} component={BPAMyApplications}></PrivateRoute>
