@@ -9,10 +9,6 @@ const App = ({ path }) => {
   const { t } = useTranslation();
   const isRTPLogin = Digit.SessionStorage.get("isRTPLogin");
 
-
-
-
-
   const BPACreate= Digit?.ComponentRegistryService?.getComponent("BPACreate");
   const RTPInbox= Digit?.ComponentRegistryService?.getComponent("RTPInbox");
   const RTPCreate= Digit?.ComponentRegistryService?.getComponent("RTPCreate");
