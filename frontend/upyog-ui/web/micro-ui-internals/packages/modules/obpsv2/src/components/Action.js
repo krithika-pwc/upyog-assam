@@ -33,7 +33,8 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
     "SEND_BACK_TO_DA",
     "FORWARD",
     "SEND_BACK_TO_TECHNICAL_ENGINEER_GP",
-    "SEND_BACK_TO_TECHNICAL_ENGINEER_MB"
+    "SEND_BACK_TO_TECHNICAL_ENGINEER_MB",
+    "DSC"
   ];
 
   const [assignResponse, setAssignResponse] = useState(null);
@@ -106,6 +107,10 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
         case "SUBMIT_REPORT":
           const submitReportUrl = `${window.location.origin}/upyog-ui/employee/obpsv2/application/${applicationNo}/${tenantId}`;
           redirectToPage(submitReportUrl);
+          break;
+        case "DSC":
+          const pendingDSCUrl = `${window.location.origin}/upyog-ui/employee/obpsv2/application/${applicationNo}/${tenantId}`;
+          redirectToPage(pendingDSCUrl);
           break;
         case "RECOMMEND_TO_CEO":
           setPopup(true);
