@@ -42,9 +42,7 @@
           "actions": [
             {
               "roles": [
-                "CITIZEN",
-                "BPA_RTP",
-                "BPA_ARCHITECT"
+                "CITIZEN"
               ],
               "action": "APPLY",
               "active": true,
@@ -62,7 +60,18 @@
             {
               "roles": [
                 "BPA_RTP",
-                "BPA_ARCHITECT"
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
               ],
               "action": "ACCEPT",
               "active": true,
@@ -71,7 +80,18 @@
             {
               "roles": [
                 "BPA_RTP",
-                "BPA_ARCHITECT"
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
               ],
               "action": "REJECT",
               "active": true,
@@ -90,7 +110,18 @@
             {
               "roles": [
                 "BPA_RTP",
-                "BPA_ARCHITECT"
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
               ],
               "action": "EDIT",
               "active": true,
@@ -109,7 +140,18 @@
             {
               "roles": [
                 "BPA_RTP",
-                "BPA_ARCHITECT"
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
               ],
               "action": "VALIDATE_GIS",
               "active": true,
@@ -128,7 +170,18 @@
             {
               "roles": [
                 "BPA_RTP",
-                "BPA_ARCHITECT"
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
               ],
               "action": "APPLY_FOR_SCRUTINY",
               "active": true,
