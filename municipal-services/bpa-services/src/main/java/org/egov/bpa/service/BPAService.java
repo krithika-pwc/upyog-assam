@@ -189,18 +189,16 @@ public class BPAService {
         }else if (criteria.getName() != null) {
             bpas = this.getBPAFromApplicantName(criteria, landcriteria, requestInfo);
         } else {
-            List<String> roles = new ArrayList<>();
-            for (Role role : requestInfo.getUserInfo().getRoles()) {
-                roles.add(role.getCode());
-            }
-            if ((criteria.tenantIdOnly() || criteria.isEmpty()) && roles.contains(BPAConstants.CITIZEN)) {
+            // Check if the user has only CITIZEN role
+            boolean isCitizen = isOnlyCitizen(requestInfo);
+            if ((criteria.tenantIdOnly() || criteria.isEmpty()) && isCitizen) {
                 log.info("loading data of created by me");
                 bpas = this.getBPACreatedByMe(criteria, requestInfo, landcriteria, edcrNos);
                 log.info("no of bpas retuning by the search query" + bpas.size());
             } else {
                 if (isDetailRequired) {
                     // If user has ONLY CITIZEN role, filter by createdBy to ensure citizens can only view their own applications
-                    if (roles.size() == 1 && roles.contains(BPAConstants.CITIZEN) && !StringUtils.isEmpty(requestInfo.getUserInfo().getUuid())) {
+                    if (isCitizen && !StringUtils.isEmpty(requestInfo.getUserInfo().getUuid())) {
                             List<String> uuids = new ArrayList<>();
                             uuids.add(requestInfo.getUserInfo().getUuid());
                             criteria.setCreatedBy(uuids);
@@ -910,5 +908,18 @@ public class BPAService {
         wfIntegrator.reassignRTP(bpaRequest);
         repository.update(bpaRequest, BPAConstants.RTP_UPDATE);
         return bpaRequest.getBPA();
+    }
+
+     /**
+     * Check if the logged in user has only CITIZEN role
+     * @param requestInfo The RequestInfo containing user roles
+     * @return boolean indicating if the user is only a CITIZEN
+     * */
+    private boolean isOnlyCitizen(RequestInfo requestInfo) {
+        if (requestInfo.getUserInfo() != null && requestInfo.getUserInfo().getRoles() != null) {
+            List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+            return roles.size() == 1 && roles.contains(BPAConstants.CITIZEN);
+        }
+        return false;
     }
 }
