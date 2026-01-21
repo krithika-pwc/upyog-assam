@@ -35,6 +35,7 @@ import {
   import GisDetails from "../../components/GisDetails";
   import { convertDateToEpoch, getEstimatePayload,formatEpochDateDMY} from "../../utils";
   import { OBPSV2Services } from "../../../../../libraries/src/services/elements/OBPSV2";
+  import {RTPS} from "../../utils/rtpRoles"
   // import getBPAAcknowledgementData from "../../utils/getBPAAcknowledgementData";
   
   /**
@@ -171,7 +172,7 @@ import {
         try {
           const tenantId = Digit.ULBService.getCurrentTenantId();
           const response = await Digit.OBPSV2Services.rtpsearch({
-            tenantId, roleCodes: ["BPA_ARCHITECT"] 
+            tenantId, roleCodes: RTPS
           });
           if (response?.user?.length > 0) {
             const formattedRtpOptions = response.user.map((user) => ({
