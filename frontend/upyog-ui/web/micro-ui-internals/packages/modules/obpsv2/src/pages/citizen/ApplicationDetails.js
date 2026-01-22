@@ -1206,31 +1206,31 @@ import {
             <StatusTable>
               <Row
                 label={t("BPA_HOUSE_NO")}
-                text={permanentAddress?.houseNo || t("CS_NA")}
+                text={address?.houseNo || t("CS_NA")}
               />
               <Row
                 label={t("BPA_ADDRESS_LINE_1")}
-                text={permanentAddress?.addressLine1 || t("CS_NA")}
+                text={address?.addressLine1 || t("CS_NA")}
               />
               <Row
                 label={t("BPA_ADDRESS_LINE_2")}
-                text={permanentAddress?.addressLine2 || t("CS_NA")}
+                text={address?.addressLine2 || t("CS_NA")}
               />
               <Row
                 label={t("BPA_DISTRICT")}
-                text={t(permanentAddress?.district) || t("CS_NA")}
+                text={t(address?.district) || t("CS_NA")}
               />
               <Row
                 label={t("BPA_STATE")}
-                text={permanentAddress?.state || t("CS_NA")}
+                text={address?.state || t("CS_NA")}
               />
                <Row
                 label={t("BPA_CITY_VILLAGE")}
-                text={t(permanentAddress?.localityCode) || t("CS_NA")}
+                text={t(address?.locality?.code) || t("CS_NA")}
               />
               <Row
                 label={t("BPA_PIN_CODE")}
-                text={permanentAddress?.pincode || t("CS_NA")}
+                text={address?.pincode || t("CS_NA")}
               />
             </StatusTable>
   
@@ -1386,7 +1386,9 @@ import {
               </div>
 
               <div style={{ marginLeft: "20px" }}>
-              <LinkButton label={t("CHANGE_RTP")} onClick={rtpChange} />
+              {["PENDING_RTP_APPROVAL", "EDIT_APPLICATION", "GIS_VALIDATION", "PENDING_FOR_SCRUTINY", "CITIZEN_APPROVAL"].includes(bpa_details?.status) && (
+                <LinkButton label={t("CHANGE_RTP")} onClick={rtpChange} />
+              )}
               </div>
               </div>
               <Row
