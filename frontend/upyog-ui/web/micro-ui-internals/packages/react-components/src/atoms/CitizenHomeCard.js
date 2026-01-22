@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const CitizenHomeCard = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
-  console.log("linkslinks",links)
+  const { t } = useTranslation();
   function replaceDigitUiWithUpyogUi(data) {
     return data.map(item => ({
       ...item,
@@ -30,7 +31,7 @@ const CitizenHomeCard = ({ header, links = [], state, Icon, Info, isInfo = false
     if (item.name === "BPA_APPLY_FOR_REGISTER_AS_RTP") {
       return {
         ...item,
-        i18nKey: isRTPLogin ? "BPA_RTP_VIEW_INBOX" : "BPA_APPLY_FOR_REGISTER_AS_RTP"
+        i18nKey: isRTPLogin ? t("BPA_RTP_VIEW_INBOX") : t("BPA_APPLY_FOR_REGISTER_AS_RTP")
       };
     }
     return item;
