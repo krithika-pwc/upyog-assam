@@ -31,7 +31,7 @@ public class LandQueryBuilder {
 			+ "landAddress.id AS land_address_id, landAddress.house_no AS house_no, landAddress.address_line_1 AS address_line_1, "
 			+ "landAddress.address_line_2 AS address_line_2, landAddress.landmark AS landmark, landAddress.locality AS locality, "
 			+ "landAddress.district AS district, landAddress.region AS region, landAddress.state AS state, "
-			+ "landAddress.country AS country, landAddress.pincode AS pincode, "
+			+ "landAddress.country AS country, landAddress.pincode AS pincode, landAddress.same_as_site_address AS same_as_site_address, "
 
 			+ "landGeo.id AS geo_id, landGeo.latitude AS latitude, landGeo.longitude AS longitude, "
 
