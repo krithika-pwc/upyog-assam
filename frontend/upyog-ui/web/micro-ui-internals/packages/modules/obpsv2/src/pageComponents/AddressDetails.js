@@ -84,7 +84,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
   const [permanentPincode, setPermanentPincode] = useState(formData?.address?.permanent?.pincode || searchResult?.landInfo?.address?.pincode || "");
 
   // Correspondence Address Fields
-  const [sameAsPermanent, setSameAsPermanent] = useState(formData?.address?.sameAsPermanent || false);
+  const [sameAsPermanent, setSameAsPermanent] = useState(formData?.address?.sameAsPermanent || searchResult?.landInfo?.address?.sameAsSiteAddress || false);
   const [correspondenceHouseNo, setCorrespondenceHouseNo] = useState(formData?.address?.correspondence?.houseNo || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.houseNo || "");
   const [correspondenceAddressLine1, setCorrespondenceAddressLine1] = useState(formData?.address?.correspondence?.addressLine1 || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.addressLine1 || "");
   const [correspondenceAddressLine2, setCorrespondenceAddressLine2] = useState(formData?.address?.correspondence?.addressLine2 || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.addressLine2 || "");
