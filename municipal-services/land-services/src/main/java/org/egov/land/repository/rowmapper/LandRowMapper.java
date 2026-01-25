@@ -81,6 +81,7 @@ public class LandRowMapper implements ResultSetExtractor<List<LandInfo>> {
 						.state(rs.getString("state"))
 						.country(rs.getString("country"))
 						.pincode(rs.getString("pincode"))
+						.sameAsSiteAddress((Boolean) rs.getObject("same_as_site_address"))
 						.geoLocation(geoLocation)
 						.tenantId(tenantId)
 						.locality(locality)
