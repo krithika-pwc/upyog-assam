@@ -667,19 +667,19 @@ export const OBPSV2Services = {
       isInsert: true,
       isCommon: true,
       values: [
-        { title: "BPA_HOUSE_NO", value: permanentAddress?.houseNo || "NA" },
+        { title: "BPA_HOUSE_NO", value: address?.houseNo || "NA" },
         {
           title: "BPA_ADDRESS_LINE_1",
-          value: permanentAddress?.addressLine1 || "NA",
+          value: address?.addressLine1 || "NA",
         },
         {
           title: "BPA_ADDRESS_LINE_2",
-          value: permanentAddress?.addressLine2 || "NA",
+          value: address?.addressLine2 || "NA",
         },
-        { title: "BPA_DISTRICT", value: permanentAddress?.district || "NA" },
-        { title: "BPA_STATE", value: permanentAddress?.state || "NA" },
-        { title: "BPA_CITY_VILLAGE", value: permanentAddress?.localityCode || "NA" },
-        { title: "BPA_PIN_CODE", value: permanentAddress?.pincode || "NA" },
+        { title: "BPA_DISTRICT", value: address?.district || "NA" },
+        { title: "BPA_STATE", value: address?.state || "NA" },
+        { title: "BPA_CITY_VILLAGE", value: address?.locality?.code || "NA" },
+        { title: "BPA_PIN_CODE", value: address?.pincode || "NA" },
       ],
     };
 
