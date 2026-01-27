@@ -325,7 +325,7 @@ public class EPramaanRequestService {
     /**
      * Get public key from certificate for JWT signature verification
      * Certificate value is read from application.properties
-     * 
+     *
      * @return PublicKey for JWT verification
      * @throws Exception if certificate parsing fails
      */
@@ -397,11 +397,11 @@ public class EPramaanRequestService {
         UserRequest user = new UserRequest();
         user.setMobileNumber(tokenRes.getMobileNumber());
         user.setName(tokenRes.getName());
-        
+
         // Set generic SSO fields
         user.setSsoId(tokenRes.getEpramaanId());
         user.setSsoType("EPRAMAAN"); // Set SSO type as EPRAMAAN
-        
+
         // Also set digilockerid for backward compatibility
         user.setDigilockerid(tokenRes.getEpramaanId());
         user.setTenantId(configurations.getStateLevelTenantId());
@@ -417,7 +417,7 @@ public class EPramaanRequestService {
         // Use the new generic SSO endpoint with ssoType parameter
         String url = configurations.getUserHost() + configurations.getUserSsoEndpoint() + "?ssoType=EPRAMAAN";
         log.info("Calling SSO endpoint: {}", url);
-        
+
         // Use autowired restTemplate for user service call (typically HTTP, not HTTPS)
         Object userOauth = this.restTemplate.postForEntity(url, createUserRequest, Object.class).getBody();
         log.info("Received user object from user service: {}", userOauth.toString());
@@ -442,18 +442,18 @@ public class EPramaanRequestService {
     public Object getToken(@Valid EparmaanRequest eparmaanRequest) {
         String stateId = eparmaanRequest.getState();
         log.info("State ID received in callback: " + stateId);
-        
+
         // Retrieve stored ePramaanData using state
         EPramaanData ePramaanData = stateCodeMap.get(stateId);
-        
+
         // Validate that state exists
         if (ePramaanData == null) {
             log.error("No ePramaanData found for state: {}. State may have expired or is invalid.", stateId);
             throw new RuntimeException("Invalid state parameter - session expired or not found. Please try logging in again.");
         }
-        
+
         log.info("Found ePramaanData for state. Code verifier and nonce retrieved successfully.");
-        
+
         // Build token request with code and stored PKCE parameters
         TokenReq tokenReq = TokenReq.builder()
                 .code(eparmaanRequest.getCode())
@@ -463,24 +463,24 @@ public class EPramaanRequestService {
         // Exchange authorization code for ePramaan token
         EPramaanTokenRes tokenRes = getToken(tokenReq);
         log.info("Successfully retrieved ePramaan token for user: {}", tokenRes.getName());
-        
+
         // Create default RequestInfo for callback scenario (no user session yet)
         RequestInfo requestInfo = createDefaultRequestInfo();
-        
+
         // Call user service to create/update user and get OAuth token
         Object user = getOauthToken(requestInfo, tokenRes);
-        
+
         // Clean up state from map after successful token exchange
         stateCodeMap.remove(stateId);
         log.info("State cleaned up from memory. User authentication completed.");
-        
+
         return user;
     }
 
     /**
      * Generate ePramaan logout form data for frontend to submit
      * As per ePramaan SLO specification, frontend submits form with "data" key containing JSON
-     * 
+     *
      * @param sessionId - ePramaan session ID from JWT token
      * @param sub - Subject from JWT token (ePramaan user identifier)
      * @param tenantId - Tenant ID
@@ -492,28 +492,28 @@ public class EPramaanRequestService {
         String iss = configurations.getEpIss();
         String redirectUrl = configurations.getEpServiceLogoutUri();
         String customParameter = "UPYOG-Logout";
-        
+
         log.info("ePramaan logout clientId: [{}], sessionId: [{}], iss: [{}], logoutRequestId: [{}], sub: [{}], redirectUrl: [{}]", clientId, sessionId, iss, logoutRequestId, sub, redirectUrl);
         // Generate HMAC: input = clientId + sessionId + iss + logoutRequestId + sub + redirectUrl, key = logoutRequestId
         String inputValue = clientId + sessionId + iss + logoutRequestId + sub + redirectUrl;
         String hmac = hashHMACHex(inputValue, logoutRequestId);
 
         return EPramaanLogoutFormData.builder()
-            .sub(sub)
-            .clientId(clientId)
-            .redirectUrl(redirectUrl)
-            .logoutRequestId(logoutRequestId)
-            .hmac(hmac)
-            .iss(iss)
-            .customParameter(customParameter)
-            .sessionId(sessionId)
-            .build();
+                .sub(sub)
+                .clientId(clientId)
+                .redirectUrl(redirectUrl)
+                .logoutRequestId(logoutRequestId)
+                .hmac(hmac)
+                .iss(iss)
+                .customParameter(customParameter)
+                .sessionId(sessionId)
+                .build();
     }
 
     /**
      * Creates a default RequestInfo for SSO callback scenarios
      * where no user session exists yet
-     * 
+     *
      * @return RequestInfo with default values
      */
     private RequestInfo createDefaultRequestInfo() {
@@ -530,7 +530,7 @@ public class EPramaanRequestService {
     /**
      * Add ePramaan session info (sessionId and sub) to the OAuth response
      * This allows frontend to store these values for later use in logout
-     * 
+     *
      * @param userOauthResponse - OAuth response from user service
      * @param tokenRes - ePramaan token response containing sessionId and sub
      * @return Modified OAuth response with sessionId and sub added
@@ -539,23 +539,23 @@ public class EPramaanRequestService {
     public Object addEPramaanUserSessionInfo(Object userOauthResponse, EPramaanTokenRes tokenRes) {
         try {
             log.info("Adding ePramaan session info (sessionId and sub) to OAuth response");
-            
+
             if (userOauthResponse instanceof Map) {
                 Map<String, Object> responseMap = (Map<String, Object>) userOauthResponse;
-                
+
                 responseMap.put("sessionId", tokenRes.getSessionId());
                 responseMap.put("sub", tokenRes.getSub());
-                
-                log.info("Successfully added - sessionId: {}, sub: {}", 
-                    tokenRes.getSessionId(), tokenRes.getSub());
-                
+
+                log.info("Successfully added - sessionId: {}, sub: {}",
+                        tokenRes.getSessionId(), tokenRes.getSub());
+
                 return responseMap;
             } else {
-                log.warn("OAuth response is not a Map (Type: {}), cannot add ePramaan session info", 
-                    userOauthResponse.getClass().getName());
+                log.warn("OAuth response is not a Map (Type: {}), cannot add ePramaan session info",
+                        userOauthResponse.getClass().getName());
                 return userOauthResponse;
             }
-            
+
         } catch (Exception e) {
             log.error("Error adding ePramaan session info to user object: {}", e.getMessage(), e);
             log.warn("Returning original OAuth response. Frontend won't have sessionId/sub for logout.");

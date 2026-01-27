@@ -1,393 +1,410 @@
 {
-	"RequestInfo": {
-		"apiId": "Rainmaker",
-		"action": "",
-		"did": 1,
-		"key": "",
-		"msgId": "20230910130900|en_IN",
-		"requesterId": "",
-		"ts": 1513579888772,
-		"ver": ".01",
-		"authToken": "{{devAuth}}",
-		"userInfo": {
-			"id": 2130,
-			"uuid": "f9517ac8-a630-4b4a-adbf-717a7d99fa5c",
-			"userName": "9999009999",
-			"name": "KS",
-			"mobileNumber": "9999009999",
-			"emailId": "test@test.com",
-			"locale": null,
-			"type": "CITIZEN",
-			"roles": [
-				{
-					"name": "Citizen",
-					"code": "CITIZEN",
-					"tenantId": "pg"
-				}
-			],
-			"active": true,
-			"tenantId": "pg",
-			"permanentCity": null
-		}
-	},
-	"BusinessServices": [
-		{
-			"tenantId": "as",
-			"businessService": "BPA_DA_MB",
-			"business": "bpa-services",
-			"businessServiceSla": "",
-			"states": [
-				{
-					"state": null,
-					"actions": [
-						{
-							"roles": [
-								"CITIZEN",
-								"BPA_RTP",
-								"BPA_ARCHITECT"
-							],
-							"action": "APPLY",
-							"active": true,
-							"nextState": "PENDING_RTP_APPROVAL"
-						}
-					],
-					"isStartState": true,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_RTP_APPROVAL",
-					"actions": [
-						{
-							"roles": [
-								"BPA_RTP",
-								"BPA_ARCHITECT"
-							],
-							"action": "ACCEPT",
-							"active": true,
-							"nextState": "EDIT_APPLICATION"
-						},
-						{
-							"roles": [
-								"BPA_RTP",
-								"BPA_ARCHITECT"
-							],
-							"action": "REJECT",
-							"active": true,
-							"nextState": "REJECTED"
-						}
-					],
-					"applicationStatus": "PENDING_RTP_APPROVAL",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "EDIT_APPLICATION",
-					"actions": [
-						{
-							"roles": [
-								"BPA_RTP",
-								"BPA_ARCHITECT"
-							],
-							"action": "EDIT",
-							"active": true,
-							"nextState": "GIS_VALIDATION"
-						}
-					],
-					"applicationStatus": "EDIT_APPLICATION",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "GIS_VALIDATION",
-					"actions": [
-						{
-							"roles": [
-								"BPA_RTP",
-								"BPA_ARCHITECT"
-							],
-							"action": "VALIDATE_GIS",
-							"active": true,
-							"nextState": "PENDING_FOR_SCRUTINY"
-						}
-					],
-					"applicationStatus": "GIS_VALIDATION",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_FOR_SCRUTINY",
-					"actions": [
-						{
-							"roles": [
-								"BPA_RTP",
-								"BPA_ARCHITECT"
-							],
-							"action": "APPLY_FOR_SCRUTINY",
-							"active": true,
-							"nextState": "CITIZEN_APPROVAL"
-						}
-					],
-					"applicationStatus": "PENDING_FOR_SCRUTINY",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "CITIZEN_APPROVAL",
-					"actions": [
-						{
-							"roles": [
-								"CITIZEN"
-							],
-							"action": "APPROVE",
-							"active": true,
-							"nextState": "PENDING_DA_ENGINEER"
-						},
-						{
-							"roles": [
-								"CITIZEN"
-							],
-							"action": "SEND_BACK_TO_RTP",
-							"active": true,
-							"nextState": "PENDING_RTP_APPROVAL"
-						}
-					],
-					"applicationStatus": "CITIZEN_APPROVAL",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_DA_ENGINEER",
-					"actions": [
-						{
-							"roles": [
-								"BPA_ENGINEER_DA"
-							],
-							"action": "SUBMIT_REPORT",
-							"active": true,
-							"nextState": "PENDING_DD_AD_DEVELOPMENT_AUTHORITY"
-						},
-						{
-							"roles": [
-								"BPA_ENGINEER_DA"
-							],
-							"action": "SEND_BACK_TO_RTP",
-							"active": true,
-							"nextState": "PENDING_RTP_APPROVAL"
-						}
-					],
-					"applicationStatus": "PENDING_DA_ENGINEER",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_DD_AD_DEVELOPMENT_AUTHORITY",
-					"actions": [
-						{
-							"roles": [
-								"BPA_DD_AD_DA"
-							],
-							"action": "RECOMMEND_TO_CHAIRMAN_DA",
-							"active": true,
-							"nextState": "PENDING_CHAIRMAN_DA"
-						},
-						{
-							"roles": [
-								"BPA_DD_AD_DA"
-							],
-							"action": "SEND_BACK_TO_DA",
-							"active": true,
-							"nextState": "PENDING_DA_ENGINEER"
-						}
-					],
-					"applicationStatus": "PENDING_DD_AD_DEVELOPMENT_AUTHORITY",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_CHAIRMAN_DA",
-					"actions": [
-						{
-							"roles": [
-								"BPA_CHAIRMAN_DA"
-							],
-							"action": "APPROVE",
-							"active": true,
-							"nextState": "PENDING_DSC"
-						}
-					],
-					"applicationStatus": "PENDING_CHAIRMAN_DA",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_DSC",
-					"actions": [
-						{
-							"roles": [
-								"BPA_CEO"
-							],
-							"action": "DSC",
-							"active": true,
-							"nextState": "PAYMENT_PENDING"
-						}
-					],
-					"applicationStatus": "PENDING_DSC",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PAYMENT_PENDING",
-					"actions": [
-						{
-							"roles": [
-								"CITIZEN"
-							],
-							"action": "PAY",
-							"active": true,
-							"nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_MB"
-						}
-					],
-					"applicationStatus": "PAYMENT_PENDING",
-					"isStartState": false,
-					"isStateUpdatable": false,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "FORWARDED_TO_TECHNICAL_ENGINEER_MB",
-					"actions": [
-						{
-							"roles": [
-								"BPA_TECHNICAL_ENGINEER_MB"
-							],
-							"action": "FORWARD",
-							"active": true,
-							"nextState": "FORWARDED_TO_DD_AD_TCP"
-						}
-					],
-					"applicationStatus": "FORWARDED_TO_TECHNICAL_ENGINEER_MB",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "FORWARDED_TO_DD_AD_TCP",
-					"actions": [
-						{
-							"roles": [
-								"BPA_DD_AD_TCP"
-							],
-							"action": "FORWARD",
-							"active": true,
-							"nextState": "PENDING_CHAIRMAN_PRESIDENT_MB"
-						}
-					],
-					"applicationStatus": "FORWARDED_TO_DD_AD_TCP",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_CHAIRMAN_PRESIDENT_MB",
-					"actions": [
-						{
-							"roles": [
-								"BPA_CHAIRMAN_PRESIDENT_MB"
-							],
-							"action": "APPROVE",
-							"active": true,
-							"nextState": "PENDING_FINAL_DSC"
-						},
-						{
-							"roles": [
-								"BPA_CHAIRMAN_PRESIDENT_MB"
-							],
-							"action": "SEND_BACK_TO_TECHNICAL_ENGINEER_MB",
-							"active": true,
-							"nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_MB"
-						}
-					],
-					"applicationStatus": "PENDING_CHAIRMAN_PRESIDENT_MB",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "PENDING_FINAL_DSC",
-					"actions": [
-						{
-							"roles": [
-								"BPA_COMMISSIONER"
-							],
-							"action": "DSC",
-							"active": true,
-							"nextState": "CITIZEN_FINAL_PAYMENT"
-						}
-					],
-					"applicationStatus": "PENDING_FINAL_DSC",
-					"isStartState": false,
-					"isStateUpdatable": true,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "CITIZEN_FINAL_PAYMENT",
-					"actions": [
-						{
-							"roles": [
-								"CITIZEN"
-							],
-							"action": "PAY",
-							"active": true,
-							"nextState": "APPLICATION_COMPLETED"
-						}
-					],
-					"applicationStatus": "CITIZEN_FINAL_PAYMENT",
-					"isStartState": false,
-					"isStateUpdatable": false,
-					"isTerminateState": false,
-					"docUploadRequired": false
-				},
-				{
-					"state": "APPLICATION_COMPLETED",
-					"isStartState": false,
-					"isStateUpdatable": false,
-					"isTerminateState": true,
-					"applicationStatus": "APPLICATION_COMPLETED",
-					"docUploadRequired": false
-				},
-				{
-					"state": "REJECTED",
-					"isStartState": false,
-					"isStateUpdatable": false,
-					"isTerminateState": true,
-					"applicationStatus": "REJECTED",
-					"docUploadRequired": false
-				}
-			]
-		}
-	]
+  "RequestInfo": {
+    "apiId": "Rainmaker",
+    "action": "",
+    "did": 1,
+    "key": "",
+    "msgId": "20230910130900|en_IN",
+    "requesterId": "",
+    "ts": 1513579888772,
+    "ver": ".01",
+    "authToken": "{{devAuth}}",
+    "userInfo": {
+      "id": 2130,
+      "uuid": "f9517ac8-a630-4b4a-adbf-717a7d99fa5c",
+      "userName": "9999009999",
+      "name": "KS",
+      "mobileNumber": "9999009999",
+      "emailId": "test@test.com",
+      "locale": null,
+      "type": "CITIZEN",
+      "roles": [
+        {
+          "name": "Citizen",
+          "code": "CITIZEN",
+          "tenantId": "pg"
+        }
+      ],
+      "active": true,
+      "tenantId": "pg",
+      "permanentCity": null
+    }
+  },
+  "BusinessServices": [
+    {
+      "tenantId": "as",
+      "businessService": "BPA_DA_MB",
+      "business": "bpa-services",
+      "businessServiceSla": "",
+      "states": [
+        {
+          "state": null,
+          "actions": [
+            {
+              "roles": [
+                "CITIZEN"
+              ],
+              "action": "APPLY",
+              "active": true,
+              "nextState": "PENDING_RTP_APPROVAL"
+            }
+          ],
+          "isStartState": true,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PENDING_RTP_APPROVAL",
+          "actions": [
+            {
+              "roles": [
+                "BPA_RTP",
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
+              ],
+              "action": "ACCEPT",
+              "active": true,
+              "nextState": "EDIT_APPLICATION"
+            },
+            {
+              "roles": [
+                "BPA_RTP",
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
+              ],
+              "action": "REJECT",
+              "active": true,
+              "nextState": "REJECTED"
+            }
+          ],
+          "applicationStatus": "PENDING_RTP_APPROVAL",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "EDIT_APPLICATION",
+          "actions": [
+            {
+              "roles": [
+                "BPA_RTP",
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
+              ],
+              "action": "EDIT",
+              "active": true,
+              "nextState": "GIS_VALIDATION"
+            }
+          ],
+          "applicationStatus": "EDIT_APPLICATION",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "GIS_VALIDATION",
+          "actions": [
+            {
+              "roles": [
+                "BPA_RTP",
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
+              ],
+              "action": "VALIDATE_GIS",
+              "active": true,
+              "nextState": "PENDING_FOR_SCRUTINY"
+            }
+          ],
+          "applicationStatus": "GIS_VALIDATION",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PENDING_FOR_SCRUTINY",
+          "actions": [
+            {
+              "roles": [
+                "BPA_RTP",
+                "BPA_ARCHITECT",
+                "BPA_BUILDER",
+                "BPA_ENGINEER",
+                "BPA_STRUCTURALENGINEER",
+                "BPA_TOWNPLANNER",
+                "BPA_SUPERVISOR",
+                "BPA_GEO_TECH_ENGINEER",
+                "BPA_CIVIL_ENGINEER",
+                "BPA_UTILITY_ENGINEER",
+                "BPA_LANDSCAPE_ARCHITECT",
+                "BPA_GROUP_AGENCY",
+                "BPA_URBAN_DESIGNER"
+              ],
+              "action": "APPLY_FOR_SCRUTINY",
+              "active": true,
+              "nextState": "CITIZEN_APPROVAL"
+            }
+          ],
+          "applicationStatus": "PENDING_FOR_SCRUTINY",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "CITIZEN_APPROVAL",
+          "actions": [
+            {
+              "roles": [
+                "CITIZEN"
+              ],
+              "action": "APPROVE",
+              "active": true,
+              "nextState": "PENDING_DA_ENGINEER"
+            },
+            {
+              "roles": [
+                "CITIZEN"
+              ],
+              "action": "SEND_BACK_TO_RTP",
+              "active": true,
+              "nextState": "PENDING_RTP_APPROVAL"
+            }
+          ],
+          "applicationStatus": "CITIZEN_APPROVAL",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PENDING_DA_ENGINEER",
+          "actions": [
+            {
+              "roles": [
+                "BPA_ENGINEER_DA"
+              ],
+              "action": "SUBMIT_REPORT",
+              "active": true,
+              "nextState": "PENDING_DD_AD_DEVELOPMENT_AUTHORITY"
+            },
+            {
+              "roles": [
+                "BPA_ENGINEER_DA"
+              ],
+              "action": "SEND_BACK_TO_RTP",
+              "active": true,
+              "nextState": "PENDING_RTP_APPROVAL"
+            }
+          ],
+          "applicationStatus": "PENDING_DA_ENGINEER",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PENDING_DD_AD_DEVELOPMENT_AUTHORITY",
+          "actions": [
+            {
+              "roles": [
+                "BPA_DD_AD_DA"
+              ],
+              "action": "RECOMMEND_TO_CHAIRMAN_DA",
+              "active": true,
+              "nextState": "PENDING_CHAIRMAN_DA"
+            },
+            {
+              "roles": [
+                "BPA_DD_AD_DA"
+              ],
+              "action": "SEND_BACK_TO_DA",
+              "active": true,
+              "nextState": "PENDING_DA_ENGINEER"
+            }
+          ],
+          "applicationStatus": "PENDING_DD_AD_DEVELOPMENT_AUTHORITY",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PENDING_CHAIRMAN_DA",
+          "actions": [
+            {
+              "roles": [
+                "BPA_CHAIRMAN_DA"
+              ],
+              "action": "APPROVE",
+              "active": true,
+              "nextState": "PAYMENT_PENDING"
+            }
+          ],
+          "applicationStatus": "PENDING_CHAIRMAN_DA",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PAYMENT_PENDING",
+          "actions": [
+            {
+              "roles": [
+                "CITIZEN"
+              ],
+              "action": "PAY",
+              "active": true,
+              "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_MB"
+            }
+          ],
+          "applicationStatus": "PAYMENT_PENDING",
+          "isStartState": false,
+          "isStateUpdatable": false,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "FORWARDED_TO_TECHNICAL_ENGINEER_MB",
+          "actions": [
+            {
+              "roles": [
+                "BPA_TECHNICAL_ENGINEER_MB"
+              ],
+              "action": "FORWARD",
+              "active": true,
+              "nextState": "FORWARDED_TO_DD_AD_TCP"
+            }
+          ],
+          "applicationStatus": "FORWARDED_TO_TECHNICAL_ENGINEER_MB",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "FORWARDED_TO_DD_AD_TCP",
+          "actions": [
+            {
+              "roles": [
+                "BPA_DD_AD_TCP"
+              ],
+              "action": "FORWARD",
+              "active": true,
+              "nextState": "PENDING_CHAIRMAN_PRESIDENT_MB"
+            }
+          ],
+          "applicationStatus": "FORWARDED_TO_DD_AD_TCP",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "PENDING_CHAIRMAN_PRESIDENT_MB",
+          "actions": [
+            {
+              "roles": [
+                "BPA_CHAIRMAN_PRESIDENT_MB"
+              ],
+              "action": "APPROVE",
+              "active": true,
+              "nextState": "CITIZEN_FINAL_PAYMENT"
+            },
+            {
+              "roles": [
+                "BPA_CHAIRMAN_PRESIDENT_MB"
+              ],
+              "action": "SEND_BACK_TO_TECHNICAL_ENGINEER_MB",
+              "active": true,
+              "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_MB"
+            }
+          ],
+          "applicationStatus": "PENDING_CHAIRMAN_PRESIDENT_MB",
+          "isStartState": false,
+          "isStateUpdatable": true,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "CITIZEN_FINAL_PAYMENT",
+          "actions": [
+            {
+              "roles": [
+                "CITIZEN"
+              ],
+              "action": "PAY",
+              "active": true,
+              "nextState": "APPLICATION_COMPLETED"
+            }
+          ],
+          "applicationStatus": "CITIZEN_FINAL_PAYMENT",
+          "isStartState": false,
+          "isStateUpdatable": false,
+          "isTerminateState": false,
+          "docUploadRequired": false
+        },
+        {
+          "state": "APPLICATION_COMPLETED",
+          "isStartState": false,
+          "isStateUpdatable": false,
+          "isTerminateState": true,
+          "applicationStatus": "APPLICATION_COMPLETED",
+          "docUploadRequired": false
+        },
+        {
+          "state": "REJECTED",
+          "isStartState": false,
+          "isStateUpdatable": false,
+          "isTerminateState": true,
+          "applicationStatus": "REJECTED",
+          "docUploadRequired": false
+        }
+      ]
+    }
+  ]
 }

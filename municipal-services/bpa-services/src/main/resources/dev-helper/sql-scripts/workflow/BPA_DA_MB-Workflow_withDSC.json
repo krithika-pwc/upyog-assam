@@ -33,7 +33,7 @@
   "BusinessServices": [
     {
       "tenantId": "as",
-      "businessService": "BPA_DA_GP",
+      "businessService": "BPA_DA_MB",
       "business": "bpa-services",
       "businessServiceSla": "",
       "states": [
@@ -281,7 +281,7 @@
               ],
               "action": "APPROVE",
               "active": true,
-              "nextState": "PAYMENT_PENDING"
+              "nextState": "PENDING_DSC"
             }
           ],
           "applicationStatus": "PENDING_CHAIRMAN_DA",
@@ -290,7 +290,25 @@
           "isTerminateState": false,
           "docUploadRequired": false
         },
-        {
+		{
+			"state": "PENDING_DSC",
+			"actions": [
+				{
+					"roles": [
+						"BPA_CHAIRMAN_DA"
+					],
+					"action": "DSC",
+					"active": true,
+					"nextState": "PAYMENT_PENDING"
+				}
+			],
+			"applicationStatus": "PENDING_DSC",
+			"isStartState": false,
+			"isStateUpdatable": true,
+			"isTerminateState": false,
+			"docUploadRequired": false
+		},
+		{
           "state": "PAYMENT_PENDING",
           "actions": [
             {
@@ -299,7 +317,7 @@
               ],
               "action": "PAY",
               "active": true,
-              "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_GP"
+              "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_MB"
             }
           ],
           "applicationStatus": "PAYMENT_PENDING",
@@ -309,18 +327,18 @@
           "docUploadRequired": false
         },
         {
-          "state": "FORWARDED_TO_TECHNICAL_ENGINEER_GP",
+          "state": "FORWARDED_TO_TECHNICAL_ENGINEER_MB",
           "actions": [
             {
               "roles": [
-                "BPA_TECHNICAL_ENGINEER_GP"
+                "BPA_TECHNICAL_ENGINEER_MB"
               ],
               "action": "FORWARD",
               "active": true,
               "nextState": "FORWARDED_TO_DD_AD_TCP"
             }
           ],
-          "applicationStatus": "FORWARDED_TO_TECHNICAL_ENGINEER_GP",
+          "applicationStatus": "FORWARDED_TO_TECHNICAL_ENGINEER_MB",
           "isStartState": false,
           "isStateUpdatable": true,
           "isTerminateState": false,
@@ -335,7 +353,7 @@
               ],
               "action": "FORWARD",
               "active": true,
-              "nextState": "PENDING_CHAIRMAN_PRESIDENT_GP"
+              "nextState": "PENDING_CHAIRMAN_PRESIDENT_MB"
             }
           ],
           "applicationStatus": "FORWARDED_TO_DD_AD_TCP",
@@ -345,31 +363,49 @@
           "docUploadRequired": false
         },
         {
-          "state": "PENDING_CHAIRMAN_PRESIDENT_GP",
+          "state": "PENDING_CHAIRMAN_PRESIDENT_MB",
           "actions": [
             {
               "roles": [
-                "BPA_CHAIRMAN_PRESIDENT_GP"
+                "BPA_CHAIRMAN_PRESIDENT_MB"
               ],
               "action": "APPROVE",
               "active": true,
-              "nextState": "CITIZEN_FINAL_PAYMENT"
+              "nextState": "PENDING_FINAL_DSC"
             },
             {
               "roles": [
-                "BPA_CHAIRMAN_PRESIDENT_GP"
+                "BPA_CHAIRMAN_PRESIDENT_MB"
               ],
-              "action": "SEND_BACK_TO_TECHNICAL_ENGINEER_GP",
+              "action": "SEND_BACK_TO_TECHNICAL_ENGINEER_MB",
               "active": true,
-              "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_GP"
+              "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_MB"
             }
           ],
-          "applicationStatus": "PENDING_CHAIRMAN_PRESIDENT_GP",
+          "applicationStatus": "PENDING_CHAIRMAN_PRESIDENT_MB",
           "isStartState": false,
           "isStateUpdatable": true,
           "isTerminateState": false,
           "docUploadRequired": false
         },
+		{
+			"state": "PENDING_FINAL_DSC",
+			"actions": [
+				{
+					"roles": [
+						"BPA_CHAIRMAN_PRESIDENT_MB"
+					],
+					"action": "DSC",
+					"active": true,
+					"nextState": "CITIZEN_FINAL_PAYMENT"
+				}
+			],
+			"applicationStatus": "PENDING_FINAL_DSC",
+			"isStartState": false,
+			"isStateUpdatable": true,
+			"isTerminateState": false,
+			"docUploadRequired": false
+		},
         {
           "state": "CITIZEN_FINAL_PAYMENT",
           "actions": [

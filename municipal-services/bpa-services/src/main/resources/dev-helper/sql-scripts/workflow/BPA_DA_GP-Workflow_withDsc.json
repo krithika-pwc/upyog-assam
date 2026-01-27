@@ -281,7 +281,7 @@
               ],
               "action": "APPROVE",
               "active": true,
-              "nextState": "PAYMENT_PENDING"
+              "nextState": "PENDING_DSC"
             }
           ],
           "applicationStatus": "PENDING_CHAIRMAN_DA",
@@ -290,7 +290,25 @@
           "isTerminateState": false,
           "docUploadRequired": false
         },
-        {
+		{
+			"state": "PENDING_DSC",
+			"actions": [
+				{
+					"roles": [
+						"BPA_CHAIRMAN_DA"
+					],
+					"action": "DSC",
+					"active": true,
+					"nextState": "PAYMENT_PENDING"
+				}
+			],
+			"applicationStatus": "PENDING_DSC",
+			"isStartState": false,
+			"isStateUpdatable": true,
+			"isTerminateState": false,
+			"docUploadRequired": false
+		},
+		{
           "state": "PAYMENT_PENDING",
           "actions": [
             {
@@ -353,7 +371,7 @@
               ],
               "action": "APPROVE",
               "active": true,
-              "nextState": "CITIZEN_FINAL_PAYMENT"
+              "nextState": "PENDING_FINAL_DSC"
             },
             {
               "roles": [
@@ -370,6 +388,24 @@
           "isTerminateState": false,
           "docUploadRequired": false
         },
+		{
+			"state": "PENDING_FINAL_DSC",
+			"actions": [
+				{
+					"roles": [
+						"BPA_CHAIRMAN_PRESIDENT_GP"
+					],
+					"action": "DSC",
+					"active": true,
+					"nextState": "CITIZEN_FINAL_PAYMENT"
+				}
+			],
+			"applicationStatus": "PENDING_FINAL_DSC",
+			"isStartState": false,
+			"isStateUpdatable": true,
+			"isTerminateState": false,
+			"docUploadRequired": false
+		},
         {
           "state": "CITIZEN_FINAL_PAYMENT",
           "actions": [
