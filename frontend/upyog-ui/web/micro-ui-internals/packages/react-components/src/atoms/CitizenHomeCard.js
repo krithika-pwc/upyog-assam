@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const CitizenHomeCard = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
-  console.log("linkslinks",links)
+  const { t } = useTranslation();
   function replaceDigitUiWithUpyogUi(data) {
     return data.map(item => ({
       ...item,
@@ -15,9 +16,26 @@ const CitizenHomeCard = ({ header, links = [], state, Icon, Info, isInfo = false
 
   // Filter out RTP registration link based on login type, if logged in as citizen hide the link else show it
   const isRTPLogin = Digit.SessionStorage.get("isRTPLogin");
+
   if (!isRTPLogin) {
     updatedData = updatedData.filter(item => item.name !== "BPA_APPLY_FOR_REGISTER_AS_RTP");
-  }
+  } else {
+  updatedData = updatedData.filter(item => 
+    item.name !== "BPA_CITIZEN_HOME_VIEW_APP_BY_CITIZEN_LABEL" && 
+    item.name !== "BPA_APPLY_FOR_BUILDING_PERMIT"
+    );
+  };
+
+  // Update display text for RTP link based on login status, if logged in as RTP show 'View Inbox' else show 'Register as RTP'
+  updatedData = updatedData.map(item => {
+    if (item.name === "BPA_APPLY_FOR_REGISTER_AS_RTP") {
+      return {
+        ...item,
+        i18nKey: isRTPLogin ? t("BPA_RTP_VIEW_INBOX") : t("BPA_APPLY_FOR_REGISTER_AS_RTP")
+      };
+    }
+    return item;
+  });
   
 //   function updateDisplayName(data, roles) {
 //     return data.map(item => {
