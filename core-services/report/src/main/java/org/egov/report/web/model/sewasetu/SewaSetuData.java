@@ -15,8 +15,8 @@ import java.util.List;
 public class SewaSetuData {
 
     @JsonProperty("initiated_data")
-    private InitiatedData initiatedData;
+    private ApplicationInitiatedData applicationInitiatedData;
 
     @JsonProperty("execution_data")
-    private List<ExecutionData> executionData;
+    private List<ApplicationExecutionData> applicationExecutionData;
 }

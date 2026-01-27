@@ -28,12 +28,11 @@ public class SewaSetuService {
      * 
      * @param applRefNo Application reference number
      * @param requestInfo Request information
-     * @param tenantId Tenant ID
      * @return SewaSetuResponse with application details
      */
-    public SewaSetuResponse getApplicationDetails(String applRefNo, RequestInfo requestInfo, String tenantId) {
+    public SewaSetuResponse getApplicationDetails(String applRefNo, RequestInfo requestInfo) {
         try {
-            List<Map<String, Object>> workflowHistory = sewaSetuRepository.fetchWorkflowHistory(applRefNo, tenantId);
+            List<Map<String, Object>> workflowHistory = sewaSetuRepository.fetchWorkflowHistory(applRefNo);
             SewaSetuData sewaSetuData = sewaSetuTransformer.transformToSewaSetuData(applRefNo, workflowHistory);
             
             List<SewaSetuData> dataList = new ArrayList<>();

@@ -1,8 +1,8 @@
 package org.egov.report.service.sewasetu;
 
 import lombok.extern.slf4j.Slf4j;
-import org.egov.report.web.model.sewasetu.ExecutionData;
-import org.egov.report.web.model.sewasetu.InitiatedData;
+import org.egov.report.web.model.sewasetu.ApplicationExecutionData;
+import org.egov.report.web.model.sewasetu.ApplicationInitiatedData;
 import org.egov.report.web.model.sewasetu.SewaSetuData;
 import org.springframework.stereotype.Component;
 
@@ -27,93 +27,102 @@ public class SewaSetuTransformer {
      */
     public SewaSetuData transformToSewaSetuData(String applRefNo, 
                                                  List<Map<String, Object>> workflowHistory) {
-        InitiatedData initiatedData = transformInitiatedData(applRefNo);
-        List<ExecutionData> executionDataList = transformExecutionData(workflowHistory);
+        ApplicationInitiatedData applicationInitiatedData = transformInitiatedData(applRefNo);
+        List<ApplicationExecutionData> applicationExecutionDataList = transformExecutionData(workflowHistory);
         
         return SewaSetuData.builder()
-                .initiatedData(initiatedData)
-                .executionData(executionDataList)
+                .applicationInitiatedData(applicationInitiatedData)
+                .applicationExecutionData(applicationExecutionDataList)
                 .build();
     }
 
-    private InitiatedData transformInitiatedData(String applRefNo) {
-        InitiatedData initiatedData = new InitiatedData();
-        initiatedData.setApplRefNo(applRefNo);
-        return initiatedData;
+    /**
+     * Transform application reference number to ApplicationInitiatedData
+     * */
+    private ApplicationInitiatedData transformInitiatedData(String applRefNo) {
+        ApplicationInitiatedData applicationInitiatedData = new ApplicationInitiatedData();
+        applicationInitiatedData.setApplRefNo(applRefNo);
+        return applicationInitiatedData;
     }
 
-    private List<ExecutionData> transformExecutionData(List<Map<String, Object>> workflowHistory) {
-        List<ExecutionData> executionDataList = new ArrayList<>();
+    /**
+     * Transform workflow history to list of ApplicationExecutionData
+     *
+     * @param workflowHistory Workflow history data
+     * @return List of ApplicationExecutionData
+     */
+    private List<ApplicationExecutionData> transformExecutionData(List<Map<String, Object>> workflowHistory) {
+        List<ApplicationExecutionData> applicationExecutionDataList = new ArrayList<>();
         
         if (workflowHistory == null || workflowHistory.isEmpty()) {
-            return executionDataList;
+            return applicationExecutionDataList;
         }
         
         for (Map<String, Object> workflow : workflowHistory) {
-            ExecutionData executionData = new ExecutionData();
+            ApplicationExecutionData applicationExecutionData = new ApplicationExecutionData();
             
             if (workflow.get("wf_state") != null) {
-                executionData.setTaskName(workflow.get("wf_state").toString());
+                applicationExecutionData.setTaskName(workflow.get("wf_state").toString());
             } else if (workflow.get("action") != null) {
-                executionData.setTaskName(workflow.get("action").toString());
+                applicationExecutionData.setTaskName(workflow.get("action").toString());
             }
             
             if (workflow.get("official_name") != null) {
-                executionData.setOfficialName(workflow.get("official_name").toString());
+                applicationExecutionData.setOfficialName(workflow.get("official_name").toString());
             } else if (workflow.get("assigner_name") != null) {
-                executionData.setOfficialName(workflow.get("assigner_name").toString());
+                applicationExecutionData.setOfficialName(workflow.get("assigner_name").toString());
             }
             
             if (workflow.get("designation") != null) {
-                executionData.setDesignation(workflow.get("designation").toString());
+                applicationExecutionData.setDesignation(workflow.get("designation").toString());
             } else if (workflow.get("assigner_designation") != null) {
-                executionData.setDesignation(workflow.get("assigner_designation").toString());
+                applicationExecutionData.setDesignation(workflow.get("assigner_designation").toString());
             }
             
             if (workflow.get("office_location") != null) {
-                executionData.setOfficeLocation(workflow.get("office_location").toString());
+                applicationExecutionData.setOfficeLocation(workflow.get("office_location").toString());
             } else if (workflow.get("tenant_id") != null) {
-                executionData.setOfficeLocation(workflow.get("tenant_id").toString());
+                applicationExecutionData.setOfficeLocation(workflow.get("tenant_id").toString());
             }
             
             if (workflow.get("action_time") != null) {
-                executionData.setReceivedTime(workflow.get("action_time").toString());
+                applicationExecutionData.setReceivedTime(workflow.get("action_time").toString());
             } else if (workflow.get("created_time") != null) {
                 Long createdTime = getLongValue(workflow.get("created_time"));
                 if (createdTime != null) {
-                    executionData.setReceivedTime(formatDate(createdTime));
+                    applicationExecutionData.setReceivedTime(formatDate(createdTime));
                 }
             }
             
             if (workflow.get("execution_time") != null) {
-                executionData.setExecutionTime(workflow.get("execution_time").toString());
+                applicationExecutionData.setExecutionTime(workflow.get("execution_time").toString());
             } else if (workflow.get("last_modified_time") != null) {
                 Long modifiedTime = getLongValue(workflow.get("last_modified_time"));
                 if (modifiedTime != null) {
-                    executionData.setExecutionTime(formatDate(modifiedTime));
+                    applicationExecutionData.setExecutionTime(formatDate(modifiedTime));
                 }
             } else {
-                executionData.setExecutionTime(executionData.getReceivedTime());
+                applicationExecutionData.setExecutionTime(applicationExecutionData.getReceivedTime());
             }
             
             if (workflow.get("action") != null) {
-                executionData.setActionTaken(workflow.get("action").toString());
+                applicationExecutionData.setActionTaken(workflow.get("action").toString());
             } else {
-                executionData.setActionTaken("");
+                applicationExecutionData.setActionTaken("");
             }
             
             if (workflow.get("remarks") != null) {
-                executionData.setRemarks(workflow.get("remarks").toString());
+                applicationExecutionData.setRemarks(workflow.get("remarks").toString());
             } else if (workflow.get("comment") != null) {
-                executionData.setRemarks(workflow.get("comment").toString());
+                applicationExecutionData.setRemarks(workflow.get("comment").toString());
             } else {
-                executionData.setRemarks("");
+                applicationExecutionData.setRemarks("");
             }
             
-            executionDataList.add(executionData);
+            applicationExecutionDataList.add(applicationExecutionData);
         }
         
-        return executionDataList;
+        return applicationExecutionDataList;
     }
 
     private String formatDate(Long epochTime) {

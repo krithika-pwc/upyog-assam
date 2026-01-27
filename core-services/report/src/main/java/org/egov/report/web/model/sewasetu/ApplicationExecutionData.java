@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ExecutionData {
+public class ApplicationExecutionData {
 
     @JsonProperty("task_name")
     private String taskName;

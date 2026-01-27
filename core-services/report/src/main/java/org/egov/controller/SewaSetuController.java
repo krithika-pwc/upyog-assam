@@ -33,8 +33,7 @@ public class SewaSetuController {
         try {
             SewaSetuResponse response = sewaSetuService.getApplicationDetails(
                     request.getApplRefNo(), 
-                    request.getRequestInfo(),
-                    request.getTenantId()
+                    request.getRequestInfo()
             );
             
             return new ResponseEntity<>(response, HttpStatus.OK);

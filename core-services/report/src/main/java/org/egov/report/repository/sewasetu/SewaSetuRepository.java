@@ -28,10 +28,9 @@ public class SewaSetuRepository {
      * Fetch workflow history using config-based query
      * 
      * @param applRefNo Application reference number
-     * @param tenantId Tenant ID
      * @return List of workflow history records
      */
-    public List<Map<String, Object>> fetchWorkflowHistory(String applRefNo, String tenantId) {
+    public List<Map<String, Object>> fetchWorkflowHistory(String applRefNo) {
         try {
             ReportDefinitions reportDefinitions = ReportApp.getReportDefs();
             ReportDefinition reportDefinition = reportDefinitions.getReportDefinition(
@@ -42,7 +41,7 @@ public class SewaSetuRepository {
                         "Report configuration not found: " + WORKFLOW_REPORT_NAME);
             }
             
-            ReportRequest reportRequest = buildReportRequest(applRefNo, tenantId);
+            ReportRequest reportRequest = buildReportRequest(applRefNo);
             List<Map<String, Object>> results = reportRepository.getData(
                     reportRequest, 
                     reportDefinition, 
@@ -60,9 +59,8 @@ public class SewaSetuRepository {
         }
     }
 
-    private ReportRequest buildReportRequest(String applRefNo, String tenantId) {
+    private ReportRequest buildReportRequest(String applRefNo) {
         ReportRequest reportRequest = new ReportRequest();
-        reportRequest.setTenantId(tenantId);
         
         SearchParam searchParam = new SearchParam();
         searchParam.setName("application_no");
