@@ -133,9 +133,9 @@ public class PaymentUpdateService {
 					 */
 					
 					//TODO need to remove this once DSC is configured for all the workflows
-					if (!util.validateGmdaGmcBusinessService(updateRequest.getBPA().getBusinessService())) {
-						enrichmentService.enrichPermitNumbers(updateRequest);
-					}
+//					if (!util.validateGmdaGmcBusinessService(updateRequest.getBPA().getBusinessService())) {
+//						enrichmentService.enrichPermitNumbers(updateRequest);
+//					}
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */

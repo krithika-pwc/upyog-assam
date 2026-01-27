@@ -553,9 +553,12 @@ public class BPAService {
             String status = bpaRequest.getBPA().getStatus();
             
             //TODO generating permit number during Approval by employee	
-			if ((status.equalsIgnoreCase(BPAConstants.PENDING_DSC)
+			/*if ((status.equalsIgnoreCase(BPAConstants.PENDING_DSC)
 					|| status.equalsIgnoreCase(BPAConstants.PENDING_FINAL_DSC))
-					&& util.validateGmdaGmcBusinessService(bpaRequest.getBPA().getBusinessService())) {
+					&& util.validateGmdaGmcBusinessService(bpaRequest.getBPA().getBusinessService())) {*/
+				
+			if (status.equalsIgnoreCase(BPAConstants.PENDING_DSC)
+					|| status.equalsIgnoreCase(BPAConstants.PENDING_FINAL_DSC)) {
 
 				enrichmentService.enrichPermitNumbers(bpaRequest);
 				repository.update(bpaRequest, BPAConstants.UPDATE);
