@@ -12,6 +12,8 @@ const TYPE_REGISTER = { type: "register" };
 const TYPE_LOGIN = { type: "login" };
 const DEFAULT_USER = "digit-user";
 const DEFAULT_REDIRECT_URL = "/upyog-ui/citizen";
+const RTP_REDIRECT_URL = "/upyog-ui/citizen/obpsv2/rtp/home";
+
 
 /* set citizen details to enable backward compatiable */
 const setCitizenDetail = (userObject, token, tenantId) => {
@@ -27,9 +29,13 @@ const setCitizenDetail = (userObject, token, tenantId) => {
   localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
 };
 
-const getFromLocation = (state, searchParams) => {
-  return state?.from || searchParams?.from || DEFAULT_REDIRECT_URL;
-};
+  // it will check if user is RTP or normal citizen and return redirect url accordingly
+  const getFromLocation = (state, searchParams, isRtpUser = false) => {
+    if (isRtpUser) {
+      return RTP_REDIRECT_URL;
+    }
+    return state?.from || searchParams?.from || DEFAULT_REDIRECT_URL;
+  };
 
 const Login = ({ stateCode, isUserRegistered = true }) => {
   const { t } = useTranslation();
@@ -48,17 +54,19 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
   const [canSubmitNo, setCanSubmitNo] = useState(true);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
-  // Check if user is already logged in
-  useEffect(() => {
-    const existingUser = Digit.UserService.getUser();
-    const currentTenant = Digit.ULBService.getCitizenCurrentTenant(true);
-    
-    if (existingUser?.access_token && currentTenant) {
-      // User is already logged in with tenant selected, redirect to home
-      history.replace("/upyog-ui/citizen");
-      return;
-    }
-  }, [history]);
+  // it will determine if user is existing or not and if existing then normal citizen or RTP user
+useEffect(() => {
+  const existingUser = Digit.UserService.getUser();
+  const currentTenant = Digit.ULBService.getCitizenCurrentTenant(true);
+  
+  if (existingUser?.access_token && currentTenant) {
+    // Check if it's an RTP user and redirect accordingly
+    const isRtpUser = Digit.SessionStorage.get("isRTPLogin") || isRtpLogin();
+    const redirectUrl = isRtpUser ? RTP_REDIRECT_URL : DEFAULT_REDIRECT_URL;
+    history.replace(redirectUrl);
+    return;
+  }
+}, [history]);
 
   // Function to determine if it's RTP login, based on URL path, check the path and if it includes '/rtp-login' returns true
    const isRtpLogin = () => {
@@ -90,7 +98,9 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     Digit.SessionStorage.set("citizen.userRequestObject", user);
     Digit.UserService.setUser(user);
     setCitizenDetail(user?.info, user?.access_token, stateCode);
-    const redirectPath = location.state?.from || DEFAULT_REDIRECT_URL;
+    // Determine redirect path based on RTP login status
+    const isRtpUser = isRtpLogin();
+    const redirectPath = getFromLocation(location.state, searchParams, isRtpUser);
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
       history.replace("/upyog-ui/citizen/area-mapping", {
         redirectBackTo: redirectPath,

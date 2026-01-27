@@ -76,7 +76,7 @@ public class EPramaanRequestController {
         EPramaanTokenRes tokenRes= null;
         tokenRes = ePramaanRequestService.getToken(tokenRequest.getTokenReq());
         Object user = ePramaanRequestService.getOauthToken(tokenRequest.getRequestInfo() , tokenRes);
-        
+
         // Add ePramaan sessionId and sub to the OAuth response for frontend to use in logout
         Object enhancedResponse = ePramaanRequestService.addEPramaanUserSessionInfo(user, tokenRes);
 
@@ -106,7 +106,7 @@ public class EPramaanRequestController {
     /**
      * Generate ePramaan logout form data
      * Returns JSON object that frontend will submit as form to ePramaan logout URL
-     * 
+     *
      * @param logoutRequest - Contains sessionId, sub, and tenantId
      * @return EPramaanLogoutFormData with HMAC and all required fields
      */
@@ -118,13 +118,13 @@ public class EPramaanRequestController {
         if (logoutRequest.getSub() == null || logoutRequest.getSub().isEmpty()) {
             throw new IllegalArgumentException("sub is required");
         }
-        
+
         EPramaanLogoutFormData formData = ePramaanRequestService.generateEPramaanLogoutFormData(
-            logoutRequest.getSessionId(),
-            logoutRequest.getSub(),
-            logoutRequest.getTenantId()
+                logoutRequest.getSessionId(),
+                logoutRequest.getSub(),
+                logoutRequest.getTenantId()
         );
-        
+
         return new ResponseEntity<>(formData, HttpStatus.OK);
     }
 

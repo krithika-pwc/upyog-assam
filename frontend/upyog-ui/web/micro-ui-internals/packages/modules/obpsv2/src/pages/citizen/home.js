@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import useBPAV2Inbox from "../../../../../libraries/src/hooks/obpsv2/useBPAV2Inbox";
+import { RTPS } from "../../utils/rtpRoles";
 
 const OBPASCitizenHomeScreen = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -59,7 +60,8 @@ const OBPASCitizenHomeScreen = ({ parentRoute }) => {
     }
   }, [location.pathname]);
   useEffect(() => {
-    if (userRoles?.includes("BPA_ARCHITECT")) {
+    // if (userRoles?.includes(RTPS)) {
+    if (userRoles?.some(role => RTPS.includes(role))) {
       setIsArchitect(true);
     } else {
       setIsArchitect(false);
