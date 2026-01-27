@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { FormStep, TextInput, CardLabel, RadioButtons, Dropdown, CheckBox, CardHeader, UploadFile, Toast } from "@upyog/digit-ui-react-components";
 import Timeline from "../components/Timeline";
+import {RTPS} from "../utils/rtpRoles";
 
 const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -239,7 +240,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
     const fetchUsers = async () => {
       try {
         const response = await Digit.OBPSV2Services.rtpsearch({
-          tenantId, roleCodes: ["BPA_ARCHITECT"] 
+          tenantId, roleCodes: RTPS, 
         });
         
         if (response?.user?.length > 0) {
