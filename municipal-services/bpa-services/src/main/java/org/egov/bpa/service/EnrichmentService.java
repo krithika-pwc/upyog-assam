@@ -291,8 +291,8 @@ public class EnrichmentService {
 	 */
 	public void enrichPermitNumbers(BPARequest bpaRequest) {
 		List<String> planningPermitStatuses = Arrays.asList(
-				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB,
-				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP,
+				//BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB,
+				//BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP,
 				BPAConstants.PENDING_DSC
 		);
 
@@ -301,15 +301,16 @@ public class EnrichmentService {
 		}
 
 		//TODO: one dsc integrated for all workflows, need to modify the code and condition
-		if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())
+		/*if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())
 				&& !util.validateGmdaGmcBusinessService(bpaRequest.getBPA().getBusinessService())) {
 
 			updateBuildingPermitNo(bpaRequest);
 			updateOccupancyCertificateNo(bpaRequest);
-		}
+		}*/
 		
 		if(BPAConstants.PENDING_FINAL_DSC.equals(bpaRequest.getBPA().getStatus())) {
 			updateBuildingPermitNo(bpaRequest);
+			updateOccupancyCertificateNo(bpaRequest);
 		}
 	}
 
