@@ -1,6 +1,7 @@
 package org.egov.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.egov.report.service.ReportService;
 import org.egov.report.service.sewasetu.SewaSetuService;
 import org.egov.report.web.model.sewasetu.SewaSetuApplicationRequest;
 import org.egov.report.web.model.sewasetu.SewaSetuResponse;
@@ -20,6 +21,13 @@ public class SewaSetuController {
 
     @Autowired
     private SewaSetuService sewaSetuService;
+    
+    @Autowired
+    private ReportService reportService;
+    
+   
+
+
 
     /**
      * Fetch specific application details for Sewa Setu integration
@@ -52,7 +60,7 @@ public class SewaSetuController {
     @ResponseBody
     public ResponseEntity<?> getDaywiseUpdate() {
         try {
-            ObjectNode response = reportService.getDaywiseUpdateData();
+        	ObjectNode response = sewaSetuService.getDaywiseUpdateData();
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (CustomException e) {
             log.error("Error in getting daywise update", e);
@@ -67,7 +75,7 @@ public class SewaSetuController {
     @ResponseBody
     public ResponseEntity<?> getApplicationSummaryCount() {
         try {
-            ObjectNode response = reportService.getApplicationSummaryCount();
+        	ObjectNode response = sewaSetuService.getApplicationSummaryCount();
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (CustomException e) {
             log.error("Error in getting application summary count", e);
