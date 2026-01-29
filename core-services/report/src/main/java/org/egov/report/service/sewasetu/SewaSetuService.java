@@ -8,6 +8,10 @@ import org.egov.report.web.model.sewasetu.SewaSetuResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +26,9 @@ public class SewaSetuService {
 
     @Autowired
     private SewaSetuTransformer sewaSetuTransformer;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * Fetch application details for a specific application reference number
@@ -50,5 +57,20 @@ public class SewaSetuService {
             throw new CustomException("ERROR_FETCHING_APPLICATION_DETAILS", 
                     "Error fetching application details: " + e.getMessage());
         }
+    }
+    public ObjectNode getDaywiseUpdateData() {
+        String resultJson = sewaSetuRepository.getDaywiseUpdateData();
+
+        try {
+            return (ObjectNode) objectMapper.readTree(resultJson);
+        } catch (IOException e) {
+            log.error("Error parsing daywise update result from DB", e);
+            throw new CustomException("JSON_PARSE_ERROR", "Failed to parse result from database");
+        }
+    }
+
+    public ObjectNode getApplicationSummaryCount() {
+        Map<String, Object> result = sewaSetuRepository.getApplicationSummaryCount();
+        return objectMapper.convertValue(result, ObjectNode.class);
     }
 }
