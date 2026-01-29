@@ -433,13 +433,13 @@ const fetchDscTokens = async () => {
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
           GisSearchCriteria: {
             applicationNo: application?.applicationNo,
-            tenantId: tenantId,
+            tenantId: application?.tenantId,
             status: "SUCCESS"
           }
         });
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(
-          tenantId,
+          application?.tenantId,
           {Bpa : [{...application, edcrDetail: [{ ...edcrDetail }], gisResponse}]},
           "bpaPlanningPermit"
         );
@@ -479,13 +479,13 @@ const fetchDscTokens = async () => {
             const gisResponse = await Digit.OBPSV2Services.gisSearch({
               GisSearchCriteria: {
                 applicationNo: application?.applicationNo,
-                tenantId: tenantId,
+                tenantId: application?.tenantId,
                 status: "SUCCESS"
               }
             });
           if (!fileStoreId) {
             const response = await Digit.PaymentService.generatePdf(
-              tenantId,
+              application?.tenantId,
               {
                 Bpa: [{...application, edcrDetail: [{ ...edcrDetail }], gisResponse}] 
               },
