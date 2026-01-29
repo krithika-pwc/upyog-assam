@@ -135,7 +135,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
       </div>)}
       { 
         <div className="col col-md-4  text-md-center p-0" style={{width:"40%", marginTop:"5px"}}>
-        <button className="digilocker-btn" type="submit" onClick={ePramaanRegister}>
+        <button className="digilocker-btn" type="button" onClick={ePramaanRegister}>
           <img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" className="mr-2" style={{"width":"12%"}} />
           {t("CORE_COMMON_REGISTER_LOGIN_WITH_EPRAMAAN")}
         </button>
