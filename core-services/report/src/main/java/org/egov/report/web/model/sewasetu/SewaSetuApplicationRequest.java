@@ -21,10 +21,11 @@ public class SewaSetuApplicationRequest {
     private RequestInfo requestInfo;
 
     @JsonProperty("appl_ref_no")
-    @NotBlank(message = "Application reference number is required")
     private String applRefNo;
 
     @JsonProperty("tenantId")
-    @NotBlank(message = "Tenant ID is required")
     private String tenantId;
+
+    @JsonProperty("submission_date")
+    private String submissionDate;
 }
