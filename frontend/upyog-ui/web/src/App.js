@@ -78,7 +78,7 @@ const enabledModules = [
   "Engagement",
   // "CommonPT",
   // "WS",
-  // "Reports",
+  "Reports",
   "Bills",
   // "SW",
   "BillAmendment",
