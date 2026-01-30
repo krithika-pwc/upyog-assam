@@ -84,14 +84,15 @@ public class NOCStatusUpdateService {
      */
     private Noc updateSingleNOCStatus(AAIApplicationStatus aaiStatus, RequestInfo requestInfo) {
         String uniqueId = aaiStatus.getUniqueId();
-        
+        // Fetch existing NOC by uniqueId and NOC type
         NocSearchCriteria searchCriteria = NocSearchCriteria.builder()
                 .sourceRefId(uniqueId)
+                .nocType(NOCConstants.CIVIL_AVIATION_NOC_TYPE)
                 .build();
 
         List<Noc> nocs = nocRepository.getNocDatav2(searchCriteria);
         if (CollectionUtils.isEmpty(nocs)) {
-            log.warn("AAI sync: NOC not found for {}", uniqueId);
+            log.warn("AAI sync: CIVIL Aviation NOC not found for {}", uniqueId);
             return null;
         }
         Noc existingNoc = nocs.get(0);
