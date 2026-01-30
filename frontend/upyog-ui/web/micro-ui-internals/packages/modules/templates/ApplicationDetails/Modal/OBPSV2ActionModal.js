@@ -532,7 +532,7 @@ const fetchDscTokens = async () => {
       keyId: selectedCertificateKeyId,
       file: fileStoreId,
       fileName: metaRes.fileName,
-      tenantId
+      tenantId: applicationData?.tenantId,
     });
 
     const pkcsRes = await Digit.OBPSV2Services.dscGetPKCSBulkSign({
