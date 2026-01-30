@@ -29,6 +29,7 @@ import OBPSV2Inbox from "./pages/employee/Inbox";
 import OBPSV2EmployeeCard from "./pages/employee/EmployeeCard";
 import SiteReport from "./pageComponents/siteReport"
 import RTASearchApplication from "./components/SearchApplication";
+import OBPSReportCard from "./pages/employee/ReportCard";
 const OBPSV2Module = ({ stateCode, userType, tenants }) => {
   const moduleCode = "OBPSV2";
   const { path, url } = useRouteMatch();
@@ -86,6 +87,7 @@ const componentsToRegister = {
   RTPInbox: Inbox,
   OBPSV2Inbox,
   OBPSV2Card:OBPSV2EmployeeCard,
+  ReportsCard:OBPSReportCard,
   CheckPage,
   BPAMyApplications,
   AreaMapping,
