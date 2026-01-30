@@ -56,8 +56,9 @@ const AreaMapping = () => {
       ppAuthority,
       concernedAuthority,
       bpAuthority,
-      ...(bpAuthority?.code === "MUNICIPAL_BOARD" && { ward, revenueVillage }),
+      ...(bpAuthority?.code === "MUNICIPAL_BOARD" && { ward }),
       ...(bpAuthority?.code === "GRAM_PANCHAYAT" && { villageName }),
+      ...(revenueVillage && { revenueVillage }),
       mouza
     };
     
