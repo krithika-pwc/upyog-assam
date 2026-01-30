@@ -39,6 +39,8 @@ const AreaMapping = () => {
       return baseValidation || !ward || !revenueVillage;
     } else if (bpAuthority?.code === "GRAM_PANCHAYAT") {
       return baseValidation || !villageName;
+    } else if (bpAuthority?.code === "MUNICIPAL_CORPORATION") {
+      return baseValidation || !mouza || !revenueVillage;
     }
     
     return baseValidation;
@@ -56,9 +58,9 @@ const AreaMapping = () => {
       ppAuthority,
       concernedAuthority,
       bpAuthority,
-      ...(bpAuthority?.code === "MUNICIPAL_BOARD" && { ward }),
+      ...(bpAuthority?.code === "MUNICIPAL_BOARD" && { ward, revenueVillage }),
       ...(bpAuthority?.code === "GRAM_PANCHAYAT" && { villageName }),
-      ...(revenueVillage && { revenueVillage }),
+      ...(bpAuthority?.code === "MUNICIPAL_CORPORATION" && { mouza, revenueVillage }),
       mouza
     };
     
