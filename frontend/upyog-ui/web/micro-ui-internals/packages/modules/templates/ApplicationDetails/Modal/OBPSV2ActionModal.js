@@ -522,7 +522,7 @@ const fetchDscTokens = async () => {
 
     const signPdfWithDSC = async (fileStoreId) => {
     const metaRes = await Digit.OBPSV2Services.dscGetFileMetaData({
-      tenantId,
+      tenantId: applicationData?.tenantId,
       fileStoreId,
     });
 
@@ -543,7 +543,7 @@ const fetchDscTokens = async () => {
   const signRes = await Digit.OBPSV2Services.dscGetPdfSign({
       responseData: pkcsRes?.responseData,
       tempFilePath: inputRes?.input.tempFilePath,
-      tenantId,
+      tenantId: applicationData?.tenantId,
       moduleName: "esign"
     });
       return signRes?.fileStoreId;
