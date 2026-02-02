@@ -24,18 +24,13 @@ public class SewaSetuController {
     
     @Autowired
     private ReportService reportService;
-    
-   
-
-
-
     /**
      * Fetch specific application details for Sewa Setu integration
      * 
      * @param request SewaSetuApplicationRequest containing application reference number and tenant ID
      * @return SewaSetuResponse with initiated_data and execution_data
      */
-    @PostMapping("/application-details")
+    @PostMapping("/_applicationdetails")
     public ResponseEntity<SewaSetuResponse> getApplicationDetails(
             @Valid @RequestBody SewaSetuApplicationRequest request) {
         
@@ -55,7 +50,35 @@ public class SewaSetuController {
                     "Error fetching application details: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Fetch application details by submission date for Sewa Setu integration
+     *
+     * @param request SewaSetuSubmissionDateRequest containing submission date and tenant ID
+     * @return SewaSetuResponse with initiated_data, attribute_data, and execution_data for all matching applications
+     */
+    @PostMapping("/_datewiseapplications")
+    public ResponseEntity<SewaSetuResponse> getApplicationDetailsBySubmissionDate(
+            @Valid @RequestBody SewaSetuApplicationRequest request) {
+
+        try {
+            SewaSetuResponse response = sewaSetuService.getApplicationDetailsBySubmissionDate(
+                    request.getSubmissionDate(),
+                    request.getRequestInfo()
+            );
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (CustomException ex) {
+            throw ex;
+        } catch (Exception e) {
+            log.error("Unexpected error in getApplicationDetailsBySubmissionDate", e);
+            throw new CustomException("ERROR_FETCHING_APPLICATION_DETAILS_BY_DATE",
+                    "Error fetching application details by submission date: " + e.getMessage());
+        }
+    }
+
+
     @PostMapping("/daywiseUpdate/_search")
     @ResponseBody
     public ResponseEntity<?> getDaywiseUpdate() {
