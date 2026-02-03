@@ -28,7 +28,7 @@ public class SewaSetuRepository {
     @Autowired
     private EncryptionService encryptionService;
 
-    private static final String MODULE_NAME = "rainmaker-obps";
+    private static final String MODULE_NAME = "rainmaker-sewasetu";
     private static final String WORKFLOW_REPORT_NAME = "sewasetu-workflow-history";
     private static final String APPLICATION_NUMBERS_REPORT_NAME = "sewasetu-application-numbers-by-date";
     private static final String INITIATED_DATA_REPORT_NAME = "sewasetu-initiated-data";
