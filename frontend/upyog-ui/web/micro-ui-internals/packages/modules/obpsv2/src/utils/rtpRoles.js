@@ -14,3 +14,5 @@ export const RTPS = [
     "BPA_URBAN_DESIGNER",
     "BPA_RTP"
 ]
+
+Digit.RTPS = RTPS;

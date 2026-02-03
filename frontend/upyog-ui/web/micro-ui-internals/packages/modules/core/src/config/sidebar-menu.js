@@ -2,26 +2,11 @@ import React from "react";
 import { HomeIcon, LanguageIcon, LogoutIcon, AddressBookIcon, LocationIcon, LoginIcon } from "@upyog/digit-ui-react-components";
 import ChangeLanguage from "../components/ChangeLanguage";
 
-const RTPS = [
-  "BPA_ARCHITECT",
-  "BPA_BUILDER",
-  "BPA_ENGINEER",
-  "BPA_STRUCTURALENGINEER",
-  "BPA_TOWNPLANNER",
-  "BPA_SUPERVISOR",
-  "BPA_GEO_TECH_ENGINEER",
-  "BPA_CIVIL_ENGINEER",
-  "BPA_UTILITY_ENGINEER",
-  "BPA_LANDSCAPE_ARCHITECT",
-  "BPA_GROUP_AGENCY",
-  "BPA_URBAN_DESIGNER",
-  "BPA_RTP"
-];
-
 const SideBarMenu = (t, closeSidebar, redirectToLoginPage, redirectToScrutinyPage ,isEmployee, storeData, tenantId) => {
   let filteredTenantData = storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
   const userInfo = Digit.UserService.getUser();
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
+  const RTPS = Digit.RTPS; 
 return [
   {
     type: "link",
