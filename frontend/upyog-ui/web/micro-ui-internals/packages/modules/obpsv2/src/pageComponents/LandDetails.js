@@ -291,7 +291,8 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           !rtpCategory || 
           !registeredTechnicalPerson || 
           !occupancyType || 
-          (todBenefits?.code === "YES" && !todAcknowledgement) // Form 39 is required
+          (todBenefits?.code === "YES" && (!todAcknowledgement || !form39File || !todWithTdr || !todZone)) || // Form 39 is required
+          (tdrUsed?.code === "YES" && !form36File)// TOD Zone is required
         }
       >
         <div>
@@ -589,6 +590,25 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
                 selectedOption={todZone}
                 onSelect={setTodZone}
               />
+            <CardLabel>{`${t("BPA_FORM_39")}`} </CardLabel>
+            <div className="field" style={{ marginBottom: "16px" }}>
+              <UploadFile
+                onUpload={selectForm39File}
+                onDelete={handleDeleteForm39}
+                id="form39"
+                message={isUploadingForm39 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <LoadingSpinner />
+                    <span>Uploading...</span>
+                  </div>
+                ) : uploadedForm39Id ? "1 File Uploaded" : "No File Uploaded"}
+                textStyles={{ width: "100%" }}
+                inputStyles={{ width: "280px" }}
+                accept=".pdf, .jpeg, .jpg, .png"
+                buttonType="button"
+                error={!uploadedForm39Id}
+              />
+          </div>
             </>
           )}
 
@@ -606,6 +626,8 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             innerStyles={{ minWidth: "15%" }}
           />
           
+          {tdrUsed?.code === "YES" && (
+            <>
           {/* File Uploads */}
           <CardLabel>{`${t("BPA_FORM_36")}`}</CardLabel>
           <div className="field" style={{ marginBottom: "16px" }}>
@@ -626,26 +648,8 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
               error={false}
             />
           </div>
-          
-          <CardLabel>{`${t("BPA_FORM_39")}`} </CardLabel>
-          <div className="field" style={{ marginBottom: "16px" }}>
-            <UploadFile
-              onUpload={selectForm39File}
-              onDelete={handleDeleteForm39}
-              id="form39"
-              message={isUploadingForm39 ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <LoadingSpinner />
-                  <span>Uploading...</span>
-                </div>
-              ) : uploadedForm39Id ? "1 File Uploaded" : "No File Uploaded"}
-              textStyles={{ width: "100%" }}
-              inputStyles={{ width: "280px" }}
-              accept=".pdf, .jpeg, .jpg, .png"
-              buttonType="button"
-              error={!uploadedForm39Id}
-            />
-          </div>
+             </>
+          )}
 
           {/* TOD Acknowledgement */}
           {todBenefits?.code === "YES" && (
