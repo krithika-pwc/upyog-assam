@@ -433,13 +433,13 @@ const fetchDscTokens = async () => {
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
           GisSearchCriteria: {
             applicationNo: application?.applicationNo,
-            tenantId: tenantId,
+            tenantId: application?.tenantId,
             status: "SUCCESS"
           }
         });
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(
-          tenantId,
+          application?.tenantId,
           {Bpa : [{...application, edcrDetail: [{ ...edcrDetail }], gisResponse}]},
           "bpaPlanningPermit"
         );
@@ -479,13 +479,13 @@ const fetchDscTokens = async () => {
             const gisResponse = await Digit.OBPSV2Services.gisSearch({
               GisSearchCriteria: {
                 applicationNo: application?.applicationNo,
-                tenantId: tenantId,
+                tenantId: application?.tenantId,
                 status: "SUCCESS"
               }
             });
           if (!fileStoreId) {
             const response = await Digit.PaymentService.generatePdf(
-              tenantId,
+              application?.tenantId,
               {
                 Bpa: [{...application, edcrDetail: [{ ...edcrDetail }], gisResponse}] 
               },
@@ -522,7 +522,7 @@ const fetchDscTokens = async () => {
 
     const signPdfWithDSC = async (fileStoreId) => {
     const metaRes = await Digit.OBPSV2Services.dscGetFileMetaData({
-      tenantId,
+      tenantId: applicationData?.tenantId,
       fileStoreId,
     });
 
@@ -532,7 +532,7 @@ const fetchDscTokens = async () => {
       keyId: selectedCertificateKeyId,
       file: fileStoreId,
       fileName: metaRes.fileName,
-      tenantId
+      tenantId: applicationData?.tenantId,
     });
 
     const pkcsRes = await Digit.OBPSV2Services.dscGetPKCSBulkSign({
@@ -543,7 +543,7 @@ const fetchDscTokens = async () => {
   const signRes = await Digit.OBPSV2Services.dscGetPdfSign({
       responseData: pkcsRes?.responseData,
       tempFilePath: inputRes?.input.tempFilePath,
-      tenantId,
+      tenantId: applicationData?.tenantId,
       moduleName: "esign"
     });
       return signRes?.fileStoreId;
