@@ -109,10 +109,10 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   const [occupancyType, setOccupancyType] = useState(landData?.occupancyType || (searchResult?.landInfo?.units?.[0]?.occupancyType ? {"code": searchResult?.landInfo?.units[0].occupancyType, "i18nKey": searchResult?.landInfo?.units[0].occupancyType} : "") || "");
 
   // TOD Benefits
-  const [todBenefits, setTodBenefits] = useState(landData?.todBenefits || futureProvisionOptions.find(opt => opt.code === searchResult?.additionalDetails?.todBenefits)  ||"NO");
+  const [todBenefits, setTodBenefits] = useState(landData?.todBenefits || futureProvisionOptions.find(opt => opt.code === searchResult?.additionalDetails?.todBenefits)  || {code: "NO", name: "No", i18nKey: "BPA_NO"});
   const [todWithTdr, setTodWithTdr] = useState(landData?.todWithTdr || searchResult?.additionalDetails?.todWithTdr  ||  false);
   const [todZone, setTodZone] = useState(landData?.todZone || searchResult?.additionalDetails?.todZone || "");
-  const [tdrUsed, setTdrUsed] = useState(landData?.tdrUsed || futureProvisionOptions.find(opt => opt.code === searchResult?.additionalDetails?.tdrUsed)||"NO");
+  const [tdrUsed, setTdrUsed] = useState(landData?.tdrUsed || futureProvisionOptions.find(opt => opt.code === searchResult?.additionalDetails?.tdrUsed)|| {code: "NO", name: "No", i18nKey: "BPA_NO"});
   const [todAcknowledgement, setTodAcknowledgement] = useState(landData?.todAcknowledgement || searchResult?.additionalDetails?.todAcknowledgement||false);
 
   // File upload states
@@ -144,6 +144,19 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
     setForm39File(null);
   };
 
+  useEffect(() => {
+  if(todBenefits?.code === "NO"){
+    setTodWithTdr(false);
+    setTodZone("");
+    setTodAcknowledgement(false);
+    setUploadedForm39Id(null);
+    setForm39File(null);
+  }
+  if(tdrUsed?.code === "NO"){
+    setUploadedForm36Id(null);
+    setForm36File(null);
+  }
+}, [todBenefits, tdrUsed]);
   // Form 36 upload effect
   useEffect(() => {
     (async () => {
@@ -291,7 +304,10 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           !rtpCategory || 
           !registeredTechnicalPerson || 
           !occupancyType || 
-          (todBenefits?.code === "YES" && !todAcknowledgement) // Form 39 is required
+          (horizontalExtension?.code === "YES" && !horizontalExtensionArea) ||
+          (verticalExtension?.code === "YES" && !verticalExtensionArea) ||
+          (todBenefits?.code === "YES" && (!todAcknowledgement || !uploadedForm39Id || !todWithTdr || !todZone)) || // Form 39 is required
+          (tdrUsed?.code === "YES" && !uploadedForm36Id)// TOD Zone is required
         }
       >
         <div>
@@ -559,6 +575,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
               if (value?.code === "NO") {
                 setTodWithTdr("");
                 setTodZone("");
+                setUploadedForm39Id(null);
               }
             }}
             style={{ display: "flex", flexWrap: "wrap", maxHeight: "30px" }}
@@ -577,9 +594,15 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
                 name="todWithTdr"
                 value={todWithTdr}
                 selectedOption={todWithTdr}
-                onSelect={setTodWithTdr}
+                onSelect={(value) => {
+                  setTodWithTdr(value);
+                  if (value?.code === "WITH_TDR") {
+                    setTdrUsed({ code: "YES", name: "Yes", i18nKey: "BPA_YES" });
+                  }
+                }}
+
             />
-            <CardLabel>{`${t("BPA_TOD_ZONE")}`}</CardLabel>
+            <CardLabel>{`${t("BPA_TOD_ZONE")}`} <span className="check-page-link-button">*</span> </CardLabel>
               <RadioButtons
                 t={t}
                 options={todZoneOptions}
@@ -589,6 +612,25 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
                 selectedOption={todZone}
                 onSelect={setTodZone}
               />
+            <CardLabel>{`${t("BPA_FORM_39")}`} <span className="check-page-link-button">*</span> </CardLabel>
+            <div className="field" style={{ marginBottom: "16px" }}>
+              <UploadFile
+                onUpload={selectForm39File}
+                onDelete={handleDeleteForm39}
+                id="form39"
+                message={isUploadingForm39 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <LoadingSpinner />
+                    <span>Uploading...</span>
+                  </div>
+                ) : uploadedForm39Id ? "1 File Uploaded" : "No File Uploaded"}
+                textStyles={{ width: "100%" }}
+                inputStyles={{ width: "280px" }}
+                accept=".pdf, .jpeg, .jpg, .png"
+                buttonType="button"
+                error={!uploadedForm39Id}
+              />
+          </div>
             </>
           )}
 
@@ -596,18 +638,28 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_TDR_USED")}`} <span className="check-page-link-button">*</span></CardLabel>
           <RadioButtons
             t={t}
-            options={futureProvisionOptions}
+            options={todWithTdr?.code === "WITH_TDR"
+              ? futureProvisionOptions.filter(option => option.code === "YES")
+              : futureProvisionOptions
+            }
             optionsKey="i18nKey"
             name="tdrUsed"
             value={tdrUsed}
             selectedOption={tdrUsed}
-            onSelect={setTdrUsed}
+            onSelect={(value) => {
+              setTdrUsed(value);
+              if (value?.code === "NO") {
+                setUploadedForm36Id(null);
+              }
+            }}
             style={{ display: "flex", flexWrap: "wrap", maxHeight: "30px" }}
             innerStyles={{ minWidth: "15%" }}
           />
           
+          {tdrUsed?.code === "YES" && (
+            <>
           {/* File Uploads */}
-          <CardLabel>{`${t("BPA_FORM_36")}`}</CardLabel>
+          <CardLabel>{`${t("BPA_FORM_36")}`} <span className="check-page-link-button">*</span></CardLabel>
           <div className="field" style={{ marginBottom: "16px" }}>
             <UploadFile
               onUpload={selectForm36File}
@@ -626,26 +678,8 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
               error={false}
             />
           </div>
-          
-          <CardLabel>{`${t("BPA_FORM_39")}`} </CardLabel>
-          <div className="field" style={{ marginBottom: "16px" }}>
-            <UploadFile
-              onUpload={selectForm39File}
-              onDelete={handleDeleteForm39}
-              id="form39"
-              message={isUploadingForm39 ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <LoadingSpinner />
-                  <span>Uploading...</span>
-                </div>
-              ) : uploadedForm39Id ? "1 File Uploaded" : "No File Uploaded"}
-              textStyles={{ width: "100%" }}
-              inputStyles={{ width: "280px" }}
-              accept=".pdf, .jpeg, .jpg, .png"
-              buttonType="button"
-              error={!uploadedForm39Id}
-            />
-          </div>
+             </>
+          )}
 
           {/* TOD Acknowledgement */}
           {todBenefits?.code === "YES" && (

@@ -90,4 +90,7 @@ public class Address {
 
     @ApiModelProperty(value = "This ID will hold address from owner info.")
     private String ownerInfoId;
+
+    @ApiModelProperty(value = "Boolean flag to identify whether the address is same as site address")
+    private Boolean sameAsSiteAddress;
 }

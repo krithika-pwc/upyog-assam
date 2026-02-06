@@ -300,4 +300,10 @@ public class BPAUtil {
 		return UUID.randomUUID().toString();
 	}
 
+	/*
+	 * public Boolean validateGmdaGmcBusinessService(String businessService) {
+	 * 
+	 * if (businessService.equals(BPAConstants.BPA_GMDA_GMC)) { return true; } else
+	 * { return false; } }
+	 */
 }

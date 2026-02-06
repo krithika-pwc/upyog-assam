@@ -173,7 +173,17 @@ const Urls = {
     estimate: "/bpa-services/v2/bpa/_estimate",
     updateNOC: "/noc-services/v1/noc/_update",
     nocSearch: "/noc-services/v1/noc/_search",
-    nocValidate: "/noc-services/v1/noc/_validate"
+    nocValidate: "/noc-services/v1/noc/_validate",
+     dscGetInputToken:"/dsc-services/dsc/_getTokenInput",
+      dscListToken:"https://localhost.emudhra.com:26769/DSC/ListToken",
+      dscGetToken:"/dsc-services/dsc/_getTokens",
+      dscGetInputCertificate:"/dsc-services/dsc/_getInputCertificate",
+      dscListCertificate:"https://localhost.emudhra.com:26769/DSC/ListCertificate",
+      dscGetCertificate:"/dsc-services/dsc/_getCertificate",
+      dscMetaData:"/filestore/v1/files/metadata",
+      dscPdfSignInput:"/dsc-services/dsc/_pdfSignInput",
+      dscPKCSBulkSign:"https://localhost.emudhra.com:26769/DSC/PKCSBulkSign",
+      dscPdfSign:"/dsc-services/dsc/_pdfSign",
   },
   edcr: {
     create: "/edcr/rest/dcr/scrutinize",

@@ -4,6 +4,9 @@ import ChangeLanguage from "../components/ChangeLanguage";
 
 const SideBarMenu = (t, closeSidebar, redirectToLoginPage, redirectToScrutinyPage ,isEmployee, storeData, tenantId) => {
   let filteredTenantData = storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
+  const RTPS = Digit.RTPS; 
 return [
   {
     type: "link",
@@ -30,17 +33,13 @@ return [
       onClick: redirectToLoginPage,
     },
   },
-  /*
-    Config for "Scrutiny" button in the sidebar.
-    Triggers redirectToScrutinyPage on click.
-  */
-  {
+  ...(userRoles?.some(role => RTPS.includes(role)) ? [{
     text: t("Scrutiny"),
     icon: "",
     populators: {
       onClick: redirectToScrutinyPage,
     },
-  },
+  }] : []),
   {
     id: "help-line",
     text: (

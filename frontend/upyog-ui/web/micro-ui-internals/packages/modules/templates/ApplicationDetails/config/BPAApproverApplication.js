@@ -12,7 +12,15 @@ export const configBPAApproverApplication = ({
   setUploadedFile,
   assigneeLabel,
   businessService,
-  error
+  error,
+  showEsignModal,
+  dscTokens = [],
+  selectedDscToken,
+  setSelectedDscToken,
+  dscCertificates = [],
+  selectedCertificate,
+  setSelectedCertificate,
+  isCertLoading,
 }) => {
   let isRejectOrRevocate = false;
   if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE") {
@@ -23,6 +31,51 @@ export const configBPAApproverApplication = ({
   if(action?.action == "REVOCATE" || action?.action == "REJECT") {
     isCommentRequired = true;
   }
+
+if (action?.action === "DSC") {
+  return {
+    label: {
+      heading: `WF_${action?.action}_DSC`,
+      submit: `WF_${businessService}_${action?.action}`,
+      cancel: "BPA_CITIZEN_CANCEL_BUTTON",
+    },
+    form: [
+      {
+        body: [
+          {
+            label: t("WF_TOKEN"),
+            type: "dropdown",
+            populators: (
+              <Dropdown
+                option={dscTokens}
+                optionKey="name"
+                id="fieldInspector"
+                select={setSelectedDscToken}
+                selected={selectedDscToken}
+                placeholder={t("WF_SELECT_TOKEN")}
+              />
+            ),
+          },
+          {
+            label: t("WF_CERTIFICATE"),
+            type: "dropdown",
+            populators: (
+              <Dropdown
+                option={dscCertificates || []}
+                optionKey="name"
+                id="fieldInspector"
+                select={setSelectedCertificate}
+                selected={selectedCertificate}
+                placeholder={t("WF_SELECT_CERTIFICATE")}
+              />
+            ),
+          }
+        ],
+      },
+    ],
+  };
+}
+
 
   if (window.location.href.includes("obpsv2")) {
   return {

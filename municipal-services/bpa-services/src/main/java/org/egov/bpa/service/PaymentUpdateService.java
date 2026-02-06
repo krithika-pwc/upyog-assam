@@ -9,6 +9,7 @@ import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
+import org.egov.bpa.util.BPAUtil;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
@@ -43,6 +44,9 @@ public class PaymentUpdateService {
 	private EnrichmentService enrichmentService;
 
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private BPAUtil util;
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
@@ -127,7 +131,11 @@ public class PaymentUpdateService {
 					 * or FORWARDED_TO_TECHNICAL_ENGINEER_GP or FORWARDED_TO_ZONAL_OFFICER
 					 * or APPLICATION_COMPLETED
 					 */
-					enrichmentService.enrichPermitNumbers(updateRequest);
+					
+					//TODO need to remove this once DSC is configured for all the workflows
+//					if (!util.validateGmdaGmcBusinessService(updateRequest.getBPA().getBusinessService())) {
+//						enrichmentService.enrichPermitNumbers(updateRequest);
+//					}
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */

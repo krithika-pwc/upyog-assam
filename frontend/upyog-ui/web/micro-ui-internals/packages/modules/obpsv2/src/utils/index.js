@@ -183,7 +183,8 @@ export const bpaPayload = async(data) => {
           houseNo: data?.address?.permanent?.houseNo,
           pincode: data?.address?.permanent?.pincode,
           state: data?.address?.permanent?.state?.code,
-          tenantId: data?.tenantId
+          tenantId: data?.tenantId,
+          sameAsSiteAddress:data?.address?.sameAsPermanent
         },
         owners: [
           {
@@ -197,7 +198,6 @@ export const bpaPayload = async(data) => {
             gender: data?.applicant?.gender?.code,
             relationship:data?.applicant?.relationship?.code,
             motherName: data?.applicant?.motherName,
-            permanentAddress,
             correspondenceAddress,
             active: true 
           },
@@ -280,6 +280,7 @@ export const bpaEditPayload = async (formData) => {
       ] : updated.landInfo.units,
       // Update address if provided
       address: formData?.address?.permanent ? {
+        ...updated.landInfo.address,
         addressLine1: formData.address.permanent.addressLine1,
         addressLine2: formData.address.permanent.addressLine2,
         city: formData.address.permanent.city?.code,
@@ -289,7 +290,8 @@ export const bpaEditPayload = async (formData) => {
         houseNo: formData.address.permanent.houseNo,
         pincode: formData.address.permanent.pincode,
         state: formData.address.permanent.state?.code,
-        tenantId: formData.tenantId
+        tenantId: formData.tenantId,
+        sameAsSiteAddress: formData.address.sameAsPermanent
       } : updated.landInfo.address,
     };
   }
@@ -313,6 +315,7 @@ export const bpaEditPayload = async (formData) => {
     const correspondenceAddress = formData?.address?.sameAsPermanent
       ? { ...permanentAddress, addressCategory: "CORRESPONDENCE", addressType: "CORRESPONDENCE_ADDRESS" }
       : formData?.address?.correspondence ? {
+         ...updated.landInfo.owners[0].correspondenceAddress,
           addressLine1: formData.address.correspondence.addressLine1,
           addressLine2: formData.address.correspondence.addressLine2,
           addressCategory: "CORRESPONDENCE",
@@ -339,7 +342,6 @@ export const bpaEditPayload = async (formData) => {
       emailId: formData.applicant.emailId ?? updated.landInfo.owners[0].emailId,
       fatherOrHusbandName: formData.applicant.fatherName ?? updated.landInfo.owners[0].fatherOrHusbandName,
       motherName: formData.applicant.motherName ?? updated.landInfo.owners[0].motherName,
-      permanentAddress,
       correspondenceAddress,
     };
   }
