@@ -1,7 +1,7 @@
 import { Banner, Card, LinkButton, Loader, Row, StatusTable, SubmitBar, Toast,CardText } from "@upyog/digit-ui-react-components";
 import React, { useEffect, useState,Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link,useHistory } from "react-router-dom";
 import { bpaPayload } from "../../../utils";
 import { bpaEditPayload } from "../../../utils";
 // import getBPAAcknowledgementData from "../../../utils/getBPAAcknowledgementData";
@@ -32,6 +32,7 @@ const BannerPicker = (props) => {
 const BPAAcknowledgement = ({ data, onSuccess }) => {
   const { t } = useTranslation();
   const flow = window.location.href.includes("editApplication") ? "edit" : "create";
+  const history = useHistory();
   const tenantId = flow === "edit" ? data?.areaMapping?.concernedAuthority?.code : (Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId());
   const mutation = Digit.Hooks.obpsv2.useBPACreateUpdateApi(tenantId, flow);
   const user = Digit.UserService.getUser().info;
@@ -78,6 +79,12 @@ const BPAAcknowledgement = ({ data, onSuccess }) => {
   //     setShowToast({ error: true, label: t("BPA_ACKNOWLEDGEMENT_PDF_ERROR") });
   //   }
   // };
+
+  if (mutation.isSuccess && flow === "edit") {
+    const applicationNo = mutation.data?.bpa?.[0]?.applicationNo;
+    const tenantId = mutation.data?.bpa?.[0]?.tenantId;
+    history.push(`/upyog-ui/citizen/obpsv2/application/${applicationNo}/${tenantId}`);
+  }
 
   return mutation.isLoading || mutation.isIdle ? (
     <Loader />

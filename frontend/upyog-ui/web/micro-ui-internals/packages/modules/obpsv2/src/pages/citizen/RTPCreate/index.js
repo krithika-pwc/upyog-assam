@@ -85,6 +85,9 @@ const RTPCreate = ({ parentRoute }) => {
         if (e?.response?.status === 413) {
           history.push(`${match.path}/home`);
           setIsShowToast({ key: true, label: "BPA_FILE_SIZE_TOO_LARGE" })
+        } else {
+          history.push(`${match.path}/home`);
+          setIsShowToast({ key: true, label: e?.response?.data?.Errors?.[0]?.message})
         }
       });
   }

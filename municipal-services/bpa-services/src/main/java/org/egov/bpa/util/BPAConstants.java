@@ -531,4 +531,6 @@ public class BPAConstants {
 
 
 	public static final String UPDATE_FILESTORE_ID = "UPDATE_FILESTORE_ID";
+	
+	public static final String BPA_GMDA_GMC = "BPA_GMDA_GMC";
 }
